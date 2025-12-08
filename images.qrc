@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="images">
+    <file>logo_hcmute.png</file>
+    <file>logo-hcmute.png</file>
+  </qresource>
+  <qresource prefix="newPrefix"/>
+</RCC>
