@@ -687,13 +687,14 @@ class MainWindow(QMainWindow):
                     "border-radius: 20px; font-size: 11px; font-weight: bold;")
     
     def setup_report_table(self):
-        # Setup table columns - compact for small area
-        self.ui.REPORTTB.setColumnCount(2)
-        self.ui.REPORTTB.setHorizontalHeaderLabels(["TB", "W"])
+        # Setup table columns - now wider (195px)
+        self.ui.REPORTTB.setColumnCount(3)
+        self.ui.REPORTTB.setHorizontalHeaderLabels(["Phòng", "Thiết bị", "W"])
         
         # Set column widths
-        self.ui.REPORTTB.setColumnWidth(0, 50)
-        self.ui.REPORTTB.setColumnWidth(1, 30)
+        self.ui.REPORTTB.setColumnWidth(0, 45)
+        self.ui.REPORTTB.setColumnWidth(1, 90)
+        self.ui.REPORTTB.setColumnWidth(2, 45)
         
         # Hide row numbers, compact rows
         self.ui.REPORTTB.verticalHeader().setVisible(False)
@@ -785,25 +786,28 @@ class MainWindow(QMainWindow):
         
         row = 0
         for room in self.rooms:
-            room_num = room['name'][-1]  # Get room number
+            room_short = room['name'].replace("Phòng ", "P")
             for device in room['devices']:
                 state = self.modbus.get_device_state(room['id'], device['id'])
                 power = device['power'] if state else 0
                 
-                # Device: P1:Đ (P1:Lamp)
-                dev_short = device['name'][0]  # First char of device name
-                device_text = f"P{room_num}:{dev_short}"
-                device_item = QTableWidgetItem(device_text)
+                # Room column
+                room_item = QTableWidgetItem(room_short)
+                room_item.setForeground(QColor("#778da9"))
+                self.ui.REPORTTB.setItem(row, 0, room_item)
+                
+                # Device column with status color
+                device_item = QTableWidgetItem(device['name'])
                 if state:
                     device_item.setForeground(QColor("#2ecc71"))
                 else:
                     device_item.setForeground(QColor("#778da9"))
-                self.ui.REPORTTB.setItem(row, 0, device_item)
+                self.ui.REPORTTB.setItem(row, 1, device_item)
                 
-                # Power
+                # Power column
                 power_item = QTableWidgetItem(str(power))
                 power_item.setForeground(QColor("#00d4ff") if power > 0 else QColor("#778da9"))
-                self.ui.REPORTTB.setItem(row, 1, power_item)
+                self.ui.REPORTTB.setItem(row, 2, power_item)
                 row += 1
     
     def update_status(self):

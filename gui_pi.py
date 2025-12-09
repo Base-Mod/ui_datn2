@@ -23,97 +23,90 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName("centralwidget")
         self.centralwidget.setAutoFillBackground(True)
         
-        # Sidebar container
+        # Sidebar container - Modern website style
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 75, 290))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 70, 290))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayoutWidget.setStyleSheet("""
             QWidget#verticalLayoutWidget {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #0d1b2a, stop:0.5 #1b263b, stop:1 #0d1b2a);
-                border-right: 1px solid #00d4ff;
+                    stop:0 #1b263b, stop:0.5 #0d1b2a, stop:1 #1b263b);
+                border-right: 2px solid #00d4ff;
             }
         """)
         
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
-        self.verticalLayout.setContentsMargins(0, 8, 0, 8)
-        self.verticalLayout.setSpacing(2)
+        self.verticalLayout.setContentsMargins(0, 5, 0, 5)
+        self.verticalLayout.setSpacing(3)
         self.verticalLayout.setObjectName("verticalLayout")
         
-        # Style for menu buttons - Professional look
+        # Style for menu buttons - Modern Tab Style
         menuButtonStyle = """
             QPushButton {
                 background-color: transparent;
                 color: #778da9;
                 border: none;
-                border-left: 3px solid transparent;
-                border-bottom: 1px solid #1b4965;
-                padding: 10px 8px;
-                font-size: 10px;
+                border-radius: 8px;
+                margin: 2px 5px;
+                padding: 8px 5px;
+                font-size: 9px;
                 font-weight: bold;
                 text-align: center;
             }
             QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #1b4965, stop:1 transparent);
+                background-color: rgba(0, 212, 255, 0.15);
                 color: #00d4ff;
-                border-left: 3px solid #00d4ff;
             }
-            QPushButton:pressed, QPushButton:checked {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #00d4ff, stop:0.3 #1b4965, stop:1 transparent);
-                color: #ffffff;
-                border-left: 3px solid #00d4ff;
+            QPushButton:pressed {
+                background-color: rgba(0, 212, 255, 0.3);
             }
         """
         
-        # Active button style
+        # Active button style - Glowing effect
         menuButtonActiveStyle = """
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #00d4ff, stop:0.15 #1b4965, stop:1 transparent);
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 rgba(0, 212, 255, 0.4), stop:0.5 rgba(0, 212, 255, 0.2), stop:1 rgba(0, 212, 255, 0.4));
                 color: #ffffff;
-                border: none;
-                border-left: 3px solid #00d4ff;
-                border-bottom: 1px solid #1b4965;
-                padding: 10px 8px;
-                font-size: 10px;
+                border: 1px solid #00d4ff;
+                border-radius: 8px;
+                margin: 2px 5px;
+                padding: 8px 5px;
+                font-size: 9px;
                 font-weight: bold;
                 text-align: center;
             }
             QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #00d4ff, stop:0.2 #1b4965, stop:1 transparent);
-                color: #ffffff;
-                border-left: 3px solid #00d4ff;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 rgba(0, 212, 255, 0.5), stop:0.5 rgba(0, 212, 255, 0.3), stop:1 rgba(0, 212, 255, 0.5));
             }
         """
         
         self.pushButton_2 = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.pushButton_2.setObjectName("pushButton_2")
         self.pushButton_2.setStyleSheet(menuButtonActiveStyle)  # Default active
-        self.pushButton_2.setMinimumHeight(55)
+        self.pushButton_2.setMinimumHeight(50)
         self.pushButton_2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.verticalLayout.addWidget(self.pushButton_2)
         
         self.pushButton_3 = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.pushButton_3.setObjectName("pushButton_3")
         self.pushButton_3.setStyleSheet(menuButtonStyle)
-        self.pushButton_3.setMinimumHeight(55)
+        self.pushButton_3.setMinimumHeight(50)
         self.pushButton_3.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.verticalLayout.addWidget(self.pushButton_3)
         
         self.pushButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.pushButton.setObjectName("pushButton")
         self.pushButton.setStyleSheet(menuButtonStyle)
-        self.pushButton.setMinimumHeight(55)
+        self.pushButton.setMinimumHeight(50)
         self.pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.verticalLayout.addWidget(self.pushButton)
         
         self.pushButton_4 = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.pushButton_4.setObjectName("pushButton_4")
         self.pushButton_4.setStyleSheet(menuButtonStyle)
-        self.pushButton_4.setMinimumHeight(55)
+        self.pushButton_4.setMinimumHeight(50)
         self.pushButton_4.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.verticalLayout.addWidget(self.pushButton_4)
         
@@ -124,26 +117,32 @@ class Ui_MainWindow(object):
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
         self.stackedWidget = QtWidgets.QStackedWidget(self.centralwidget)
-        self.stackedWidget.setGeometry(QtCore.QRect(75, 0, 405, 290))
+        self.stackedWidget.setGeometry(QtCore.QRect(70, 0, 410, 290))
         self.stackedWidget.setObjectName("stackedWidget")
         self.HOME = QtWidgets.QWidget()
         self.HOME.setObjectName("HOME")
         self.HOME.setAutoFillBackground(True)
         
-        # Title - ĐỒ ÁN TỐT NGHIỆP
+        # Title - ĐỒ ÁN TỐT NGHIỆP with glow effect
         self.label = QtWidgets.QLabel(self.HOME)
-        self.label.setGeometry(QtCore.QRect(10, 10, 380, 35))
+        self.label.setGeometry(QtCore.QRect(10, 8, 390, 32))
         font = QtGui.QFont()
-        font.setPointSize(14)
+        font.setPointSize(13)
         font.setBold(True)
         self.label.setFont(font)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.label.setStyleSheet("color: #ffffff; font-weight: bold;")
+        self.label.setStyleSheet("color: #ffffff; font-weight: bold; text-shadow: 0 0 10px #00d4ff;")
         self.label.setObjectName("label")
+        
+        # Top decorative line
+        self.homeLineTop = QtWidgets.QFrame(self.HOME)
+        self.homeLineTop.setGeometry(QtCore.QRect(80, 42, 250, 2))
+        self.homeLineTop.setStyleSheet("background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 transparent, stop:0.5 #00d4ff, stop:1 transparent);")
+        self.homeLineTop.setFrameShape(QtWidgets.QFrame.HLine)
         
         # Logo HCMUTE
         self.label_2 = QtWidgets.QLabel(self.HOME)
-        self.label_2.setGeometry(QtCore.QRect(170, 50, 55, 55))
+        self.label_2.setGeometry(QtCore.QRect(175, 48, 60, 60))
         self.label_2.setText("")
         self.label_2.setPixmap(QtGui.QPixmap(":/images/logo_hcmute.png"))
         self.label_2.setScaledContents(True)
@@ -151,7 +150,7 @@ class Ui_MainWindow(object):
         
         # Subtitle - HỆ THỐNG QUẢN LÝ ĐIỆN NĂNG
         self.label_7 = QtWidgets.QLabel(self.HOME)
-        self.label_7.setGeometry(QtCore.QRect(10, 110, 380, 30))
+        self.label_7.setGeometry(QtCore.QRect(10, 112, 390, 26))
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setBold(True)
@@ -160,69 +159,73 @@ class Ui_MainWindow(object):
         self.label_7.setStyleSheet("color: #00d4ff; font-weight: bold;")
         self.label_7.setObjectName("label_7")
         
-        # Decorative line
-        self.homeLine1 = QtWidgets.QFrame(self.HOME)
-        self.homeLine1.setGeometry(QtCore.QRect(50, 145, 300, 2))
-        self.homeLine1.setStyleSheet("background-color: #415a77;")
-        self.homeLine1.setFrameShape(QtWidgets.QFrame.HLine)
+        # SVTH Section with card style
+        self.svthCard = QtWidgets.QFrame(self.HOME)
+        self.svthCard.setGeometry(QtCore.QRect(15, 145, 380, 55))
+        self.svthCard.setStyleSheet("""
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, 
+                stop:0 rgba(27, 38, 59, 0.8), stop:0.5 rgba(13, 27, 42, 0.9), stop:1 rgba(27, 38, 59, 0.8));
+            border-radius: 8px;
+            border: 1px solid #415a77;
+        """)
         
         # SVTH Label
-        self.label_6 = QtWidgets.QLabel(self.HOME)
-        self.label_6.setGeometry(QtCore.QRect(10, 155, 380, 25))
+        self.label_6 = QtWidgets.QLabel(self.svthCard)
+        self.label_6.setGeometry(QtCore.QRect(0, 5, 380, 18))
         font = QtGui.QFont()
-        font.setPointSize(9)
+        font.setPointSize(8)
         font.setBold(True)
-        font.setWeight(75)
         self.label_6.setFont(font)
         self.label_6.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_6.setStyleSheet("color: #778da9;")
+        self.label_6.setStyleSheet("color: #778da9; background: transparent; border: none;")
         self.label_6.setObjectName("label_6")
         
         # Student name 1
-        self.label_4 = QtWidgets.QLabel(self.HOME)
-        self.label_4.setGeometry(QtCore.QRect(20, 180, 175, 25))
+        self.label_4 = QtWidgets.QLabel(self.svthCard)
+        self.label_4.setGeometry(QtCore.QRect(15, 26, 170, 22))
         font = QtGui.QFont()
         font.setPointSize(8)
         font.setBold(True)
-        font.setWeight(75)
         self.label_4.setFont(font)
         self.label_4.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_4.setStyleSheet("color: #e0e1dd; background-color: #1b263b; border-radius: 5px; padding: 3px;")
+        self.label_4.setStyleSheet("color: #e0e1dd; background-color: rgba(0, 212, 255, 0.15); border-radius: 5px; border: none;")
         self.label_4.setObjectName("label_4")
         
         # Student name 2
-        self.label_3 = QtWidgets.QLabel(self.HOME)
-        self.label_3.setGeometry(QtCore.QRect(200, 180, 185, 25))
+        self.label_3 = QtWidgets.QLabel(self.svthCard)
+        self.label_3.setGeometry(QtCore.QRect(195, 26, 170, 22))
         font = QtGui.QFont()
         font.setPointSize(8)
         font.setBold(True)
-        font.setWeight(75)
         self.label_3.setFont(font)
         self.label_3.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_3.setStyleSheet("color: #e0e1dd; background-color: #1b263b; border-radius: 5px; padding: 3px;")
+        self.label_3.setStyleSheet("color: #e0e1dd; background-color: rgba(0, 212, 255, 0.15); border-radius: 5px; border: none;")
         self.label_3.setObjectName("label_3")
         
-        # Decorative line 2
-        self.homeLine2 = QtWidgets.QFrame(self.HOME)
-        self.homeLine2.setGeometry(QtCore.QRect(50, 215, 300, 2))
-        self.homeLine2.setStyleSheet("background-color: #415a77;")
-        self.homeLine2.setFrameShape(QtWidgets.QFrame.HLine)
+        # GVHD Section
+        self.gvhdCard = QtWidgets.QFrame(self.HOME)
+        self.gvhdCard.setGeometry(QtCore.QRect(80, 208, 250, 35))
+        self.gvhdCard.setStyleSheet("""
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop:0 transparent, stop:0.2 rgba(243, 156, 18, 0.2), stop:0.8 rgba(243, 156, 18, 0.2), stop:1 transparent);
+            border-radius: 6px;
+            border: 1px solid #f39c12;
+        """)
         
         # GVHD Label
-        self.label_5 = QtWidgets.QLabel(self.HOME)
-        self.label_5.setGeometry(QtCore.QRect(10, 225, 380, 28))
+        self.label_5 = QtWidgets.QLabel(self.gvhdCard)
+        self.label_5.setGeometry(QtCore.QRect(0, 0, 250, 35))
         font = QtGui.QFont()
         font.setPointSize(9)
         font.setBold(True)
-        font.setWeight(75)
         self.label_5.setFont(font)
         self.label_5.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_5.setStyleSheet("color: #f39c12; font-weight: bold;")
+        self.label_5.setStyleSheet("color: #f39c12; font-weight: bold; background: transparent; border: none;")
         self.label_5.setObjectName("label_5")
         
         # Year label
         self.yearLabel = QtWidgets.QLabel(self.HOME)
-        self.yearLabel.setGeometry(QtCore.QRect(10, 255, 380, 20))
+        self.yearLabel.setGeometry(QtCore.QRect(10, 250, 390, 18))
         font = QtGui.QFont()
         font.setPointSize(8)
         self.yearLabel.setFont(font)
@@ -231,10 +234,21 @@ class Ui_MainWindow(object):
         self.yearLabel.setText("Năm học: 2024 - 2025")
         self.yearLabel.setObjectName("yearLabel")
         
-        # Exit button
+        # Exit button - modern style
         self.exit = QtWidgets.QPushButton(self.HOME)
-        self.exit.setGeometry(QtCore.QRect(375, 5, 25, 25))
-        self.exit.setStyleSheet("background-color: #e74c3c; color: white; border-radius: 12px; font-weight: bold;")
+        self.exit.setGeometry(QtCore.QRect(380, 5, 22, 22))
+        self.exit.setStyleSheet("""
+            QPushButton {
+                background-color: #e74c3c;
+                color: white;
+                border-radius: 11px;
+                font-weight: bold;
+                font-size: 10px;
+            }
+            QPushButton:hover {
+                background-color: #c0392b;
+            }
+        """)
         self.exit.setObjectName("exit")
         self.stackedWidget.addWidget(self.HOME)
         self.CONTROL = QtWidgets.QWidget()
@@ -307,7 +321,7 @@ class Ui_MainWindow(object):
         
         # Warning Label (top right)
         self.warningLabel = QtWidgets.QLabel(self.REPORT)
-        self.warningLabel.setGeometry(QtCore.QRect(200, 2, 195, 18))
+        self.warningLabel.setGeometry(QtCore.QRect(210, 2, 195, 18))
         self.warningLabel.setStyleSheet("color: #2ecc71; font-size: 9px; font-weight: bold;")
         self.warningLabel.setAlignment(QtCore.Qt.AlignRight)
         self.warningLabel.setText("")
@@ -315,32 +329,32 @@ class Ui_MainWindow(object):
         
         # Power Chart Area (left - full height)
         self.chartWidget = QtWidgets.QWidget(self.REPORT)
-        self.chartWidget.setGeometry(QtCore.QRect(5, 22, 195, 245))
+        self.chartWidget.setGeometry(QtCore.QRect(5, 22, 200, 245))
         self.chartWidget.setObjectName("chartWidget")
         self.chartWidget.setStyleSheet("background-color: #0d1b2a; border-radius: 6px; border: 1px solid #415a77;")
         
         # Chart Title placeholder (drawn by PowerChart)
         self.chartTitle = QtWidgets.QLabel(self.REPORT)
-        self.chartTitle.setGeometry(QtCore.QRect(5, 22, 195, 16))
+        self.chartTitle.setGeometry(QtCore.QRect(5, 22, 200, 16))
         self.chartTitle.setText("")
         self.chartTitle.setStyleSheet("background: transparent;")
         
         # Total Power Label (below chart)
         self.totalPowerLabel = QtWidgets.QLabel(self.REPORT)
-        self.totalPowerLabel.setGeometry(QtCore.QRect(5, 250, 195, 20))
+        self.totalPowerLabel.setGeometry(QtCore.QRect(5, 250, 200, 20))
         self.totalPowerLabel.setStyleSheet("color: #00d4ff; font-size: 10px; font-weight: bold; background: transparent;")
         self.totalPowerLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.totalPowerLabel.setText("Tổng: 0 W")
         
         # Pie Chart Area (right top)
         self.pieWidget = QtWidgets.QWidget(self.REPORT)
-        self.pieWidget.setGeometry(QtCore.QRect(205, 22, 190, 135))
+        self.pieWidget.setGeometry(QtCore.QRect(210, 22, 195, 130))
         self.pieWidget.setObjectName("pieWidget")
         self.pieWidget.setStyleSheet("background-color: #0d1b2a; border-radius: 6px; border: 1px solid #415a77;")
         
         # Table (right bottom - below pie chart)
         self.REPORTTB = QtWidgets.QTableWidget(self.REPORT)
-        self.REPORTTB.setGeometry(QtCore.QRect(205, 162, 190, 108))
+        self.REPORTTB.setGeometry(QtCore.QRect(210, 157, 195, 113))
         self.REPORTTB.setObjectName("REPORTTB")
         self.REPORTTB.setColumnCount(0)
         self.REPORTTB.setRowCount(0)
@@ -350,7 +364,7 @@ class Ui_MainWindow(object):
         self.page.setObjectName("page")
         self.page.setAutoFillBackground(True)
         self.name_ctl_4 = QtWidgets.QLabel(self.page)
-        self.name_ctl_4.setGeometry(QtCore.QRect(60, 5, 200, 30))
+        self.name_ctl_4.setGeometry(QtCore.QRect(10, 5, 390, 30))
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setBold(True)
@@ -361,7 +375,7 @@ class Ui_MainWindow(object):
         self.name_ctl_4.setObjectName("name_ctl_4")
         # Electricity tier info
         self.tierLabel = QtWidgets.QLabel(self.page)
-        self.tierLabel.setGeometry(QtCore.QRect(10, 40, 180, 130))
+        self.tierLabel.setGeometry(QtCore.QRect(10, 40, 190, 130))
         self.tierLabel.setStyleSheet("color: #778da9; font-size: 8px;")
         self.tierLabel.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
         self.tierLabel.setWordWrap(True)
@@ -369,19 +383,19 @@ class Ui_MainWindow(object):
         
         # Threshold Settings Section
         self.thresholdTitle = QtWidgets.QLabel(self.page)
-        self.thresholdTitle.setGeometry(QtCore.QRect(200, 40, 180, 20))
+        self.thresholdTitle.setGeometry(QtCore.QRect(210, 40, 190, 20))
         self.thresholdTitle.setText("CÀI ĐẶT NGƯỠNG")
         self.thresholdTitle.setStyleSheet("color: #f39c12; font-size: 9px; font-weight: bold;")
         self.thresholdTitle.setAlignment(QtCore.Qt.AlignCenter)
         
         # Warning threshold
         self.warningThresholdLabel = QtWidgets.QLabel(self.page)
-        self.warningThresholdLabel.setGeometry(QtCore.QRect(200, 65, 80, 20))
+        self.warningThresholdLabel.setGeometry(QtCore.QRect(210, 70, 90, 20))
         self.warningThresholdLabel.setText("Cảnh báo:")
         self.warningThresholdLabel.setStyleSheet("color: #f39c12; font-size: 9px;")
         
         self.warningThresholdInput = QtWidgets.QSpinBox(self.page)
-        self.warningThresholdInput.setGeometry(QtCore.QRect(280, 65, 70, 22))
+        self.warningThresholdInput.setGeometry(QtCore.QRect(300, 68, 80, 24))
         self.warningThresholdInput.setRange(100, 5000)
         self.warningThresholdInput.setValue(500)
         self.warningThresholdInput.setSuffix(" W")
@@ -392,12 +406,12 @@ class Ui_MainWindow(object):
         
         # Critical threshold
         self.criticalThresholdLabel = QtWidgets.QLabel(self.page)
-        self.criticalThresholdLabel.setGeometry(QtCore.QRect(200, 95, 80, 20))
+        self.criticalThresholdLabel.setGeometry(QtCore.QRect(210, 100, 90, 20))
         self.criticalThresholdLabel.setText("Nguy hiểm:")
         self.criticalThresholdLabel.setStyleSheet("color: #e74c3c; font-size: 9px;")
         
         self.criticalThresholdInput = QtWidgets.QSpinBox(self.page)
-        self.criticalThresholdInput.setGeometry(QtCore.QRect(280, 95, 70, 22))
+        self.criticalThresholdInput.setGeometry(QtCore.QRect(300, 98, 80, 24))
         self.criticalThresholdInput.setRange(200, 10000)
         self.criticalThresholdInput.setValue(1000)
         self.criticalThresholdInput.setSuffix(" W")
@@ -408,7 +422,7 @@ class Ui_MainWindow(object):
         
         # Save button
         self.saveThresholdBtn = QtWidgets.QPushButton(self.page)
-        self.saveThresholdBtn.setGeometry(QtCore.QRect(240, 130, 70, 25))
+        self.saveThresholdBtn.setGeometry(QtCore.QRect(260, 135, 80, 28))
         self.saveThresholdBtn.setText("Lưu")
         self.saveThresholdBtn.setObjectName("saveThresholdBtn")
         
