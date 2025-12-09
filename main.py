@@ -598,20 +598,7 @@ class MainWindow(QMainWindow):
         success = self.modbus.toggle_device(room_id, device['id'])
         if success:
             state = self.modbus.get_device_state(room_id, device['id'])
-            if state:
-                self.ui.pushButton_5.setText("ON")
-                self.ui.pushButton_5.setStyleSheet(
-                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-                    "stop:0 #58d68d, stop:1 #2ecc71); "
-                    "color: white; border: 2px solid #27ae60; "
-                    "border-radius: 20px; font-size: 11px; font-weight: bold;")
-            else:
-                self.ui.pushButton_5.setText("OFF")
-                self.ui.pushButton_5.setStyleSheet(
-                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-                    "stop:0 #ec7063, stop:1 #e74c3c); "
-                    "color: white; border: 2px solid #c0392b; "
-                    "border-radius: 20px; font-size: 11px; font-weight: bold;")
+            self.update_device1_ui(state)
     
     def toggle_device2(self):
         room_id = self.current_room['id']
@@ -620,20 +607,7 @@ class MainWindow(QMainWindow):
         success = self.modbus.toggle_device(room_id, device['id'])
         if success:
             state = self.modbus.get_device_state(room_id, device['id'])
-            if state:
-                self.ui.pushButton_6.setText("ON")
-                self.ui.pushButton_6.setStyleSheet(
-                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-                    "stop:0 #58d68d, stop:1 #2ecc71); "
-                    "color: white; border: 2px solid #27ae60; "
-                    "border-radius: 20px; font-size: 11px; font-weight: bold;")
-            else:
-                self.ui.pushButton_6.setText("OFF")
-                self.ui.pushButton_6.setStyleSheet(
-                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-                    "stop:0 #ec7063, stop:1 #e74c3c); "
-                    "color: white; border: 2px solid #c0392b; "
-                    "border-radius: 20px; font-size: 11px; font-weight: bold;")
+            self.update_device2_ui(state)
     
     def prev_room(self):
         self.current_room_index = (self.current_room_index - 1) % len(self.rooms)
@@ -645,6 +619,44 @@ class MainWindow(QMainWindow):
         self.current_room = self.rooms[self.current_room_index]
         self.update_room_display()
     
+    def update_device1_ui(self, state):
+        """Update Device 1 button and status label"""
+        if state:
+            self.ui.pushButton_5.setText("ON")
+            self.ui.pushButton_5.setStyleSheet(
+                "background-color: #2ecc71; color: white; border: none; "
+                "border-radius: 15px; font-size: 12px; font-weight: bold;")
+            self.ui.device1Status.setText("ON")
+            self.ui.device1Status.setStyleSheet(
+                "color: #2ecc71; font-size: 12px; font-weight: bold; background: transparent; border: none;")
+        else:
+            self.ui.pushButton_5.setText("OFF")
+            self.ui.pushButton_5.setStyleSheet(
+                "background-color: #e74c3c; color: white; border: none; "
+                "border-radius: 15px; font-size: 12px; font-weight: bold;")
+            self.ui.device1Status.setText("OFF")
+            self.ui.device1Status.setStyleSheet(
+                "color: #e74c3c; font-size: 12px; font-weight: bold; background: transparent; border: none;")
+    
+    def update_device2_ui(self, state):
+        """Update Device 2 button and status label"""
+        if state:
+            self.ui.pushButton_6.setText("ON")
+            self.ui.pushButton_6.setStyleSheet(
+                "background-color: #2ecc71; color: white; border: none; "
+                "border-radius: 15px; font-size: 12px; font-weight: bold;")
+            self.ui.device2Status.setText("ON")
+            self.ui.device2Status.setStyleSheet(
+                "color: #2ecc71; font-size: 12px; font-weight: bold; background: transparent; border: none;")
+        else:
+            self.ui.pushButton_6.setText("OFF")
+            self.ui.pushButton_6.setStyleSheet(
+                "background-color: #e74c3c; color: white; border: none; "
+                "border-radius: 15px; font-size: 12px; font-weight: bold;")
+            self.ui.device2Status.setText("OFF")
+            self.ui.device2Status.setStyleSheet(
+                "color: #e74c3c; font-size: 12px; font-weight: bold; background: transparent; border: none;")
+    
     def update_room_display(self):
         """Update control page for current room"""
         room_id = self.current_room['id']
@@ -655,36 +667,12 @@ class MainWindow(QMainWindow):
         if len(devices) >= 1:
             self.ui.label_8.setText(devices[0]['name'])
             state1 = self.modbus.get_device_state(room_id, devices[0]['id'])
-            self.ui.pushButton_5.setText("ON" if state1 else "OFF")
-            if state1:
-                self.ui.pushButton_5.setStyleSheet(
-                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-                    "stop:0 #58d68d, stop:1 #2ecc71); "
-                    "color: white; border: 2px solid #27ae60; "
-                    "border-radius: 20px; font-size: 11px; font-weight: bold;")
-            else:
-                self.ui.pushButton_5.setStyleSheet(
-                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-                    "stop:0 #ec7063, stop:1 #e74c3c); "
-                    "color: white; border: 2px solid #c0392b; "
-                    "border-radius: 20px; font-size: 11px; font-weight: bold;")
+            self.update_device1_ui(state1)
         
         if len(devices) >= 2:
             self.ui.label_9.setText(devices[1]['name'])
             state2 = self.modbus.get_device_state(room_id, devices[1]['id'])
-            self.ui.pushButton_6.setText("ON" if state2 else "OFF")
-            if state2:
-                self.ui.pushButton_6.setStyleSheet(
-                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-                    "stop:0 #58d68d, stop:1 #2ecc71); "
-                    "color: white; border: 2px solid #27ae60; "
-                    "border-radius: 20px; font-size: 11px; font-weight: bold;")
-            else:
-                self.ui.pushButton_6.setStyleSheet(
-                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-                    "stop:0 #ec7063, stop:1 #e74c3c); "
-                    "color: white; border: 2px solid #c0392b; "
-                    "border-radius: 20px; font-size: 11px; font-weight: bold;")
+            self.update_device2_ui(state2)
     
     def setup_report_table(self):
         # Setup table columns - now wider (195px)

@@ -365,7 +365,7 @@ class Ui_MainWindow(object):
                 border: none;
                 border-radius: 15px;
                 font-weight: bold;
-                font-size: 11px;
+                font-size: 12px;
                 outline: none;
             }
             QPushButton:hover {
@@ -381,7 +381,7 @@ class Ui_MainWindow(object):
         """
         
         self.pushButton_5 = QtWidgets.QPushButton(self.device1Card)
-        self.pushButton_5.setGeometry(QtCore.QRect(15, 52, 90, 30))
+        self.pushButton_5.setGeometry(QtCore.QRect(15, 50, 100, 32))
         self.pushButton_5.setStyleSheet(toggleOnStyle)
         self.pushButton_5.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.pushButton_5.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -389,7 +389,7 @@ class Ui_MainWindow(object):
         
         # Device 1 status indicator
         self.device1Status = QtWidgets.QLabel(self.device1Card)
-        self.device1Status.setGeometry(QtCore.QRect(115, 55, 50, 24))
+        self.device1Status.setGeometry(QtCore.QRect(120, 52, 50, 28))
         self.device1Status.setText("ON")
         self.device1Status.setStyleSheet("color: #2ecc71; font-size: 12px; font-weight: bold; background: transparent; border: none;")
         self.device1Status.setAlignment(QtCore.Qt.AlignCenter)
@@ -416,7 +416,7 @@ class Ui_MainWindow(object):
         self.label_9.setObjectName("label_9")
         
         self.pushButton_6 = QtWidgets.QPushButton(self.device2Card)
-        self.pushButton_6.setGeometry(QtCore.QRect(15, 52, 90, 30))
+        self.pushButton_6.setGeometry(QtCore.QRect(15, 50, 100, 32))
         self.pushButton_6.setStyleSheet(toggleOnStyle)
         self.pushButton_6.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.pushButton_6.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -424,7 +424,7 @@ class Ui_MainWindow(object):
         
         # Device 2 status indicator
         self.device2Status = QtWidgets.QLabel(self.device2Card)
-        self.device2Status.setGeometry(QtCore.QRect(115, 55, 50, 24))
+        self.device2Status.setGeometry(QtCore.QRect(120, 52, 50, 28))
         self.device2Status.setText("ON")
         self.device2Status.setStyleSheet("color: #2ecc71; font-size: 12px; font-weight: bold; background: transparent; border: none;")
         self.device2Status.setAlignment(QtCore.Qt.AlignCenter)
