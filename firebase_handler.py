@@ -312,14 +312,47 @@ class FirebaseHandler:
             data = message["data"]
             event = message["event"]
             
-            print(f"[FIREBASE] Settings changed: path='{path}', event={event}")
+            print(f"[FIREBASE] Settings changed: path='{path}', event={event}, data={data}")
             
-            # Notify callback if registered
+            # Handle full settings load (initial)
+            if path == "" and isinstance(data, dict):
+                print(f"[FIREBASE] Full settings load: {data}")
+                # Process thresholds
+                if 'thresholds' in data:
+                    thresholds = data['thresholds']
+                    if 'warning' in thresholds:
+                        if self.on_settings_change_callback:
+                            self.on_settings_change_callback("thresholds/warning", thresholds['warning'])
+                    if 'critical' in thresholds:
+                        if self.on_settings_change_callback:
+                            self.on_settings_change_callback("thresholds/critical", thresholds['critical'])
+                
+                # Process tier prices
+                if 'tier_prices' in data:
+                    tier_prices = data['tier_prices']
+                    if isinstance(tier_prices, dict):
+                        for tier_key, price in tier_prices.items():
+                            if self.on_settings_change_callback:
+                                self.on_settings_change_callback(f"tier_prices/{tier_key}", price)
+                    elif isinstance(tier_prices, list):
+                        for i, price in enumerate(tier_prices):
+                            if self.on_settings_change_callback:
+                                self.on_settings_change_callback(f"tier_prices/tier{i+1}", price)
+                
+                # Process VAT
+                if 'vat' in data:
+                    if self.on_settings_change_callback:
+                        self.on_settings_change_callback("vat", data['vat'])
+                return
+            
+            # Handle individual changes
             if self.on_settings_change_callback:
                 self.on_settings_change_callback(path, data)
             
         except Exception as e:
             print(f"[ERROR] Processing settings change: {e}")
+            import traceback
+            traceback.print_exc()
     
     def set_settings_change_callback(self, callback):
         """Set callback for settings changes from Firebase"""
@@ -565,6 +598,21 @@ class FirebaseHandler:
             print(f"[ERROR] Firebase get thresholds: {e}")
         
         return POWER_THRESHOLDS.copy()
+    
+    def get_all_settings(self) -> dict:
+        """Get all settings (thresholds, tier prices, VAT) from Firebase"""
+        if self.simulation_mode:
+            return {}
+        
+        try:
+            data = self.db.child("power_management").child("settings").get().val()
+            if data:
+                print(f"[FIREBASE] Loaded all settings: {data}")
+                return data
+        except Exception as e:
+            print(f"[ERROR] Firebase get all settings: {e}")
+        
+        return {}
     
     def set_thresholds(self, warning: int, critical: int):
         """Save threshold settings to Firebase (async)"""

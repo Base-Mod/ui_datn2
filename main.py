@@ -501,30 +501,40 @@ class MainWindow(QMainWindow):
         self.calculator = ElectricityCalculator()
         self.tracker = UsageTracker()
         
-        # Load thresholds from Firebase
-        fb_thresholds = self.firebase.get_thresholds()
-        if fb_thresholds:
-            self.power_thresholds = fb_thresholds
+        # Load ALL settings from Firebase at startup
+        fb_settings = self.firebase.get_all_settings()
+        print(f"[STARTUP] Firebase settings: {fb_settings}")
+        
+        # Load thresholds
+        if 'thresholds' in fb_settings:
+            thresholds = fb_settings['thresholds']
+            self.power_thresholds = {
+                'warning': thresholds.get('warning', POWER_THRESHOLDS['warning']),
+                'critical': thresholds.get('critical', POWER_THRESHOLDS['critical'])
+            }
         else:
             self.power_thresholds = POWER_THRESHOLDS.copy()
         
-        # Load tier prices from Firebase
-        tier_prices, vat = self.firebase.get_tier_prices()
-        print(f"[DEBUG] Tier prices from Firebase: {tier_prices}, VAT: {vat}")
-        if tier_prices and isinstance(tier_prices, list) and len(tier_prices) == 6:
-            # Validate all prices are numbers
-            valid = True
-            for price in tier_prices:
-                if not isinstance(price, (int, float)):
-                    print(f"[ERROR] Invalid price type: {price} ({type(price)})")
-                    valid = False
-                    break
-            if valid:
+        # Load tier prices and VAT
+        if 'tier_prices' in fb_settings and 'vat' in fb_settings:
+            tier_prices_data = fb_settings['tier_prices']
+            vat = fb_settings['vat']
+            
+            # Convert tier prices to list
+            tier_prices = []
+            if isinstance(tier_prices_data, dict):
+                for i in range(1, 7):
+                    tier_key = f"tier{i}"
+                    if tier_key in tier_prices_data:
+                        price = tier_prices_data[tier_key]
+                        tier_prices.append(int(price) if isinstance(price, (int, float, str)) else 0)
+            elif isinstance(tier_prices_data, list):
+                for price in tier_prices_data:
+                    tier_prices.append(int(price) if isinstance(price, (int, float, str)) else 0)
+            
+            if len(tier_prices) == 6:
                 self.calculator.update_tier_prices(tier_prices, vat / 100.0 if vat else 0.08)
-            else:
-                print("[WARNING] Invalid tier prices from Firebase, using defaults")
-        else:
-            print("[WARNING] No valid tier prices from Firebase, using defaults")
+                print(f"[STARTUP] Loaded tier prices: {tier_prices}, VAT: {vat}%")
         
         # Room navigation
         self.rooms = ROOMS
@@ -552,6 +562,9 @@ class MainWindow(QMainWindow):
         # Setup threshold settings first (needed for chart)
         self.setup_thresholds()
         
+        # Setup tier prices in setup tab
+        self.setup_tier_prices()
+        
         # Setup power chart
         self.setup_power_chart()
         
@@ -576,6 +589,34 @@ class MainWindow(QMainWindow):
         
         # Scale UI after show
         QTimer.singleShot(100, self.scale_ui)
+        
+        # Trigger initial settings update after UI is ready
+        QTimer.singleShot(500, self._trigger_initial_settings_update)
+    
+    def _trigger_initial_settings_update(self):
+        """Trigger initial settings update to ensure UI sync"""
+        print("[UI] Triggering initial settings update")
+        fb_settings = self.firebase.get_all_settings()
+        if fb_settings:
+            # Simulate settings change event for initial load
+            if 'thresholds' in fb_settings:
+                thresholds = fb_settings['thresholds']
+                if 'warning' in thresholds:
+                    self.on_firebase_settings_change("thresholds/warning", thresholds['warning'])
+                if 'critical' in thresholds:
+                    self.on_firebase_settings_change("thresholds/critical", thresholds['critical'])
+            
+            if 'tier_prices' in fb_settings:
+                tier_prices = fb_settings['tier_prices']
+                if isinstance(tier_prices, dict):
+                    for tier_key, price in tier_prices.items():
+                        self.on_firebase_settings_change(f"tier_prices/{tier_key}", price)
+                elif isinstance(tier_prices, list):
+                    for i, price in enumerate(tier_prices):
+                        self.on_firebase_settings_change(f"tier_prices/tier{i+1}", price)
+            
+            if 'vat' in fb_settings:
+                self.on_firebase_settings_change("vat", fb_settings['vat'])
     
     def sync_devices_from_firebase(self):
         """Sync device states from Firebase at startup (async)"""
@@ -836,15 +877,11 @@ class MainWindow(QMainWindow):
     
     def setup_thresholds(self):
         """Setup threshold settings - load from Firebase if available"""
-        # Try to load from Firebase first
-        fb_thresholds = self.firebase.get_thresholds()
-        if fb_thresholds:
-            self.warning_threshold = fb_thresholds.get('warning', POWER_THRESHOLDS['warning'])
-            self.critical_threshold = fb_thresholds.get('critical', POWER_THRESHOLDS['critical'])
-            print(f"[SETUP] Loaded thresholds from Firebase: {self.warning_threshold}W / {self.critical_threshold}W")
-        else:
-            self.warning_threshold = POWER_THRESHOLDS['warning']
-            self.critical_threshold = POWER_THRESHOLDS['critical']
+        # Load from local cache (already loaded from Firebase at startup)
+        self.warning_threshold = self.power_thresholds.get('warning', POWER_THRESHOLDS['warning'])
+        self.critical_threshold = self.power_thresholds.get('critical', POWER_THRESHOLDS['critical'])
+        
+        print(f"[SETUP] Using thresholds: {self.warning_threshold}W / {self.critical_threshold}W")
         
         # Room thresholds (default 200W each)
         self.room_thresholds = [200, 200, 200, 200]
@@ -860,6 +897,20 @@ class MainWindow(QMainWindow):
         # Connect save buttons
         self.ui.saveThresholdBtn.clicked.connect(self.save_thresholds)
         self.ui.saveTierBtn.clicked.connect(self.save_tier_prices)
+    
+    def setup_tier_prices(self):
+        """Setup tier prices in setup tab - load from calculator"""
+        # Get current tier prices from calculator
+        for i in range(6):
+            tier = self.calculator.tiers[i]
+            price = tier['price']
+            self.ui.tierInputs[i].setValue(int(price))
+        
+        # Get VAT from calculator
+        vat_percent = self.calculator.vat_rate * 100
+        self.ui.vatInput.setValue(vat_percent)
+        
+        print(f"[SETUP] Loaded tier prices to UI: {[int(t['price']) for t in self.calculator.tiers]}")
     
     def save_thresholds(self):
         """Save threshold settings to Firebase"""
