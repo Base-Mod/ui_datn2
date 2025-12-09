@@ -129,6 +129,33 @@ class FirebaseHandler:
             self.stream = None
         self.connected = False
     
+    def sync_device_states_from_firebase(self):
+        """Read all device states from Firebase and return them"""
+        if self.simulation_mode or not self.db:
+            return {}
+        
+        try:
+            data = self.db.child("power_management").child("control").get().val()
+            if data:
+                print(f"[FIREBASE] Loaded device states: {data}")
+                # Parse and update local states
+                for room_key, devices in data.items():
+                    room_id = int(room_key.replace('room', ''))
+                    if isinstance(devices, dict):
+                        for device_key, state in devices.items():
+                            device_id = int(device_key.replace('device', ''))
+                            if room_id in self.device_states and device_id in self.device_states[room_id]:
+                                self.device_states[room_id][device_id]['state'] = bool(state)
+                return data
+            return {}
+        except Exception as e:
+            print(f"[ERROR] Firebase sync device states: {e}")
+            return {}
+    
+    def get_all_device_states(self) -> dict:
+        """Get all device states from local cache"""
+        return self.device_states
+    
     def _start_control_listener(self):
         """Start listening for device control commands from Firebase"""
         if self.simulation_mode or not self.db:
@@ -222,6 +249,40 @@ class FirebaseHandler:
             return self.device_states[room_id][device_id]['state']
         return False
     
+    def toggle_device(self, room_id: int, device_id: int) -> bool:
+        """Toggle device state"""
+        current_state = self.get_device_state(room_id, device_id)
+        new_state = not current_state
+        return self.set_device_state(room_id, device_id, new_state)
+    
+    def get_room_power(self, room_id: int) -> float:
+        """Get total power for a room based on device states"""
+        total = 0.0
+        if room_id in self.device_states:
+            for device_id, device_data in self.device_states[room_id].items():
+                if device_data['state']:
+                    total += device_data['power']
+        return total
+    
+    def get_active_power(self) -> float:
+        """Get total active power for all rooms"""
+        total = 0.0
+        for room_id in self.device_states:
+            total += self.get_room_power(room_id)
+        return total
+    
+    def disconnect(self):
+        """Disconnect from Firebase"""
+        self.stop_auto_sync()
+        if self.stream:
+            try:
+                self.stream.close()
+            except:
+                pass
+            self.stream = None
+        self.connected = False
+        print("[FIREBASE] Disconnected")
+
     # ===== Power Data Methods =====
     
     def update_power_data(self, room_powers: dict, total_power: float):

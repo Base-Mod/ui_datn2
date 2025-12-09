@@ -7,7 +7,6 @@ from PyQt5.QtCore import Qt, QTimer, QDateTime, QRect
 from PyQt5.QtGui import QColor, QFont, QPainter, QBrush, QPen, QLinearGradient, QCursor
 from gui_pi import Ui_MainWindow
 from config import ROOMS, POWER_THRESHOLDS
-from modbus_handler import ModbusHandler
 from electricity_calc import ElectricityCalculator, UsageTracker
 from firebase_handler import FirebaseHandler, get_firebase
 import math
@@ -489,34 +488,28 @@ class MainWindow(QMainWindow):
         self.setCursor(QCursor(Qt.BlankCursor))
         QApplication.setOverrideCursor(QCursor(Qt.BlankCursor))
         
-        # Initialize Modbus handler
-        self.modbus = ModbusHandler()
-        self.modbus.connect()
-        
-        # Initialize Firebase handler
+        # Initialize Firebase handler (main data source)
         self.firebase = get_firebase()
-        self.firebase_sync_enabled = self.firebase.is_connected()
-        print(f"[FIREBASE] Sync enabled: {self.firebase_sync_enabled}, Simulation: {self.firebase.simulation_mode}")
+        print(f"[FIREBASE] Connected: {self.firebase.is_connected()}, Simulation: {self.firebase.simulation_mode}")
         
         # Set callback for remote control from Firebase (app/web)
-        if self.firebase_sync_enabled:
-            self.firebase.set_device_change_callback(self.on_firebase_device_change)
+        self.firebase.set_device_change_callback(self.on_firebase_device_change)
         
         # Initialize electricity calculator
         self.calculator = ElectricityCalculator()
         self.tracker = UsageTracker()
         
-        # Load thresholds from Firebase if available
-        if self.firebase_sync_enabled:
-            fb_thresholds = self.firebase.get_thresholds()
+        # Load thresholds from Firebase
+        fb_thresholds = self.firebase.get_thresholds()
+        if fb_thresholds:
             self.power_thresholds = fb_thresholds
-            
-            # Load tier prices from Firebase
-            tier_prices, vat = self.firebase.get_tier_prices()
-            if tier_prices and len(tier_prices) == 6:
-                self.calculator.update_tier_prices(tier_prices, vat / 100.0 if vat else 0.08)
         else:
             self.power_thresholds = POWER_THRESHOLDS.copy()
+        
+        # Load tier prices from Firebase
+        tier_prices, vat = self.firebase.get_tier_prices()
+        if tier_prices and len(tier_prices) == 6:
+            self.calculator.update_tier_prices(tier_prices, vat / 100.0 if vat else 0.08)
         
         # Room navigation
         self.rooms = ROOMS
@@ -555,6 +548,9 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self.update_status)
         self.timer.start(1000)
         
+        # Sync device states from Firebase at startup
+        self.sync_devices_from_firebase()
+        
         # Initialize UI
         self.update_room_display()
         self.ui.stackedWidget.setCurrentWidget(self.ui.HOME)
@@ -562,6 +558,29 @@ class MainWindow(QMainWindow):
         
         # Scale UI after show
         QTimer.singleShot(100, self.scale_ui)
+        
+        # Sync device states from Firebase at startup
+        self.sync_devices_from_firebase()
+    
+    def sync_devices_from_firebase(self):
+        """Sync device states from Firebase at startup"""
+        try:
+            # Read all device states from Firebase
+            fb_states = self.firebase.sync_device_states_from_firebase()
+            
+            if fb_states:
+                print("[STARTUP] Loaded device states from Firebase:")
+                for room_key, devices in fb_states.items():
+                    room_id = int(room_key.replace('room', ''))
+                    if isinstance(devices, dict):
+                        for device_key, state in devices.items():
+                            device_id = int(device_key.replace('device', ''))
+                            print(f"  Room {room_id}, Device {device_id}: {'ON' if state else 'OFF'}")
+                print("[STARTUP] Device sync complete")
+                # Update UI for current room
+                self.update_room_display()
+        except Exception as e:
+            print(f"[ERROR] Sync from Firebase failed: {e}")
     
     def scale_ui(self):
         """Scale UI elements to fit screen"""
@@ -621,27 +640,23 @@ class MainWindow(QMainWindow):
         room_id = self.current_room['id']
         device = self.current_room['devices'][0]
         
-        success = self.modbus.toggle_device(room_id, device['id'])
+        # Toggle device via Firebase
+        success = self.firebase.toggle_device(room_id, device['id'])
         if success:
-            state = self.modbus.get_device_state(room_id, device['id'])
+            state = self.firebase.get_device_state(room_id, device['id'])
             self.update_device1_ui(state)
-            # Sync to Firebase
-            print(f"[DEBUG] Toggle device1: room={room_id}, device={device['id']}, state={state}, sync_enabled={self.firebase_sync_enabled}")
-            if self.firebase_sync_enabled:
-                self.firebase.set_device_state(room_id, device['id'], state)
+            print(f"[UI] Toggle device1: Room {room_id}, Device {device['id']} -> {'ON' if state else 'OFF'}")
     
     def toggle_device2(self):
         room_id = self.current_room['id']
         device = self.current_room['devices'][1]
         
-        success = self.modbus.toggle_device(room_id, device['id'])
+        # Toggle device via Firebase
+        success = self.firebase.toggle_device(room_id, device['id'])
         if success:
-            state = self.modbus.get_device_state(room_id, device['id'])
+            state = self.firebase.get_device_state(room_id, device['id'])
             self.update_device2_ui(state)
-            # Sync to Firebase
-            print(f"[DEBUG] Toggle device2: room={room_id}, device={device['id']}, state={state}, sync_enabled={self.firebase_sync_enabled}")
-            if self.firebase_sync_enabled:
-                self.firebase.set_device_state(room_id, device['id'], state)
+            print(f"[UI] Toggle device2: Room {room_id}, Device {device['id']} -> {'ON' if state else 'OFF'}")
     
     def on_firebase_device_change(self, room_id: int, device_id: int, state: bool):
         """
@@ -650,17 +665,13 @@ class MainWindow(QMainWindow):
         """
         print(f"[UI] Firebase remote control: Room {room_id}, Device {device_id} -> {'ON' if state else 'OFF'}")
         
-        # Update Modbus (actual hardware)
-        success = self.modbus.write_coil(room_id, device_id, state)
-        
-        if success:
-            # Update UI if this is the current room being displayed
-            if room_id == self.current_room['id']:
-                devices = self.current_room['devices']
-                if device_id == devices[0]['id']:
-                    self.update_device1_ui(state)
-                elif len(devices) > 1 and device_id == devices[1]['id']:
-                    self.update_device2_ui(state)
+        # Update UI if this is the current room being displayed
+        if room_id == self.current_room['id']:
+            devices = self.current_room['devices']
+            if device_id == devices[0]['id']:
+                self.update_device1_ui(state)
+            elif len(devices) > 1 and device_id == devices[1]['id']:
+                self.update_device2_ui(state)
     
     def prev_room(self):
         self.current_room_index = (self.current_room_index - 1) % len(self.rooms)
@@ -719,12 +730,12 @@ class MainWindow(QMainWindow):
         devices = self.current_room['devices']
         if len(devices) >= 1:
             self.ui.label_8.setText(devices[0]['name'])
-            state1 = self.modbus.get_device_state(room_id, devices[0]['id'])
+            state1 = self.firebase.get_device_state(room_id, devices[0]['id'])
             self.update_device1_ui(state1)
         
         if len(devices) >= 2:
             self.ui.label_9.setText(devices[1]['name'])
-            state2 = self.modbus.get_device_state(room_id, devices[1]['id'])
+            state2 = self.firebase.get_device_state(room_id, devices[1]['id'])
             self.update_device2_ui(state2)
     
     def setup_report_table(self):
@@ -791,8 +802,7 @@ class MainWindow(QMainWindow):
             self.room_thresholds[i] = spin.value()
         
         # Sync to Firebase
-        if self.firebase_sync_enabled:
-            self.firebase.set_thresholds(self.warning_threshold, self.critical_threshold)
+        self.firebase.set_thresholds(self.warning_threshold, self.critical_threshold)
         
         # Visual feedback
         self.ui.saveThresholdBtn.setText("Da luu")
@@ -812,8 +822,7 @@ class MainWindow(QMainWindow):
         self.calculator.update_tier_prices(tier_prices, vat)
         
         # Sync to Firebase
-        if self.firebase_sync_enabled:
-            self.firebase.set_tier_prices(tier_prices, self.ui.vatInput.value())
+        self.firebase.set_tier_prices(tier_prices, self.ui.vatInput.value())
         
         # Visual feedback
         self.ui.saveTierBtn.setText("Da luu")
@@ -834,7 +843,7 @@ class MainWindow(QMainWindow):
         pie_data = []
         
         for device in room['devices']:
-            state = self.modbus.get_device_state(room['id'], device['id'])
+            state = self.firebase.get_device_state(room['id'], device['id'])
             power = device['power']
             pie_data.append((device['name'], power, state))
         
@@ -847,7 +856,7 @@ class MainWindow(QMainWindow):
         room_warnings = []
         
         for i, room in enumerate(self.rooms):
-            room_power = self.modbus.get_room_power(room['id'])
+            room_power = self.firebase.get_room_power(room['id'])
             chart_data.append((room['name'], room_power))
             total_power += room_power
             
@@ -871,7 +880,7 @@ class MainWindow(QMainWindow):
         for room in self.rooms:
             room_short = room['name'].replace("Phòng ", "P")
             for device in room['devices']:
-                state = self.modbus.get_device_state(room['id'], device['id'])
+                state = self.firebase.get_device_state(room['id'], device['id'])
                 power = device['power'] if state else 0
                 
                 # Room column
@@ -895,7 +904,7 @@ class MainWindow(QMainWindow):
     
     def update_status(self):
         current_time = QDateTime.currentDateTime().toString("hh:mm:ss dd/MM")
-        total_power = self.modbus.get_active_power()
+        total_power = self.firebase.get_active_power()
         
         # Estimate monthly cost
         estimate = self.calculator.estimate_monthly_cost(total_power)
@@ -914,14 +923,11 @@ class MainWindow(QMainWindow):
     
     def sync_to_firebase(self, total_power, monthly_cost):
         """Sync power data to Firebase"""
-        if not self.firebase_sync_enabled:
-            return
-        
         try:
             # Prepare room power data
             room_powers = {}
             for room in self.rooms:
-                room_power = self.modbus.get_room_power(room['id'])
+                room_power = self.firebase.get_room_power(room['id'])
                 room_powers[f"room{room['id']}"] = {
                     'name': room['name'],
                     'power': room_power,
@@ -929,7 +935,7 @@ class MainWindow(QMainWindow):
                 }
                 # Add device states
                 for device in room['devices']:
-                    state = self.modbus.get_device_state(room['id'], device['id'])
+                    state = self.firebase.get_device_state(room['id'], device['id'])
                     room_powers[f"room{room['id']}"]['devices'][f"device{device['id']}"] = {
                         'name': device['name'],
                         'state': state,
@@ -980,10 +986,8 @@ class MainWindow(QMainWindow):
     
     def closeEvent(self, event):
         """Clean up on close"""
-        self.modbus.disconnect()
-        # Stop Firebase auto-sync if running
-        if self.firebase_sync_enabled:
-            self.firebase.stop_auto_sync()
+        # Disconnect Firebase
+        self.firebase.disconnect()
         # Restore taskbar on Pi
         show_taskbar()
         # Restore mouse cursor
