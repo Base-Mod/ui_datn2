@@ -4,20 +4,30 @@ Firebase Realtime Database Handler for Power Management System
 Syncs device states and power data with Firebase bidirectionally
 """
 
-import json
 import threading
 import time
 
-# Try importing firebase-admin
+# Try importing pyrebase4 (simpler than firebase-admin)
 try:
-    import firebase_admin
-    from firebase_admin import credentials, db
+    import pyrebase
     FIREBASE_AVAILABLE = True
 except ImportError:
     FIREBASE_AVAILABLE = False
-    print("[WARNING] firebase-admin not installed, running in simulation mode")
+    print("[WARNING] pyrebase4 not installed. Run: pip install pyrebase4")
 
 from config import ROOMS, POWER_THRESHOLDS
+
+
+# Firebase Configuration - YOUR PROJECT
+FIREBASE_CONFIG = {
+    "apiKey": "AIzaSyDTvGflmFqArRm4MvJXNCEU6F7GGZ-vsFU",
+    "authDomain": "datn-426e1.firebaseapp.com",
+    "databaseURL": "https://datn-426e1-default-rtdb.firebaseio.com",
+    "projectId": "datn-426e1",
+    "storageBucket": "datn-426e1.firebasestorage.app",
+    "messagingSenderId": "496143525778",
+    "appId": "1:496143525778:web:e59595f5bee532f40d834b"
+}
 
 
 # Singleton instance
@@ -41,61 +51,34 @@ class FirebaseHandler:
     /power_management/
         /rooms/
             /room1/
-                /name: "Phòng 1"
+                /name: "Phong 1"
                 /power: 60 (W)
-                /energy: 1.5 (kWh)
                 /devices/
                     /device0/
                         state: true/false
-                        name: "Đèn"
+                        name: "Den"
                         power: 15 (W)
-                    /device1/
-                        state: true/false
-                        name: "Quạt"
-                        power: 45 (W)
-            /room2/
-                ...
         /total/
             /power: 500 (W)
-            /energy: 10.5 (kWh)
             /monthly_cost: 750000 (VND)
+        /control/
+            /room1/device0: true/false
         /settings/
-            /thresholds/
-                warning: 500
-                critical: 1000
-            /tier_prices: [1893, 1956, 2271, 2860, 3197, 3302]
-            /vat: 8
-        /control/  (for bidirectional control from app/web)
-            /room1/
-                /device0: true/false
-                /device1: true/false
-            ...
+            /thresholds: {warning: 500, critical: 1000}
     """
     
-    def __init__(self, cred_path: str = None, database_url: str = None):
-        """
-        Initialize Firebase handler
-        
-        Args:
-            cred_path: Path to Firebase service account JSON file
-            database_url: Firebase Realtime Database URL
-        """
+    def __init__(self):
         self.connected = False
         self.simulation_mode = not FIREBASE_AVAILABLE
-        self.db_ref = None
-        self.control_listener = None
+        self.db = None
         self.device_states = {}
         self.power_data = {}
         self.on_device_change_callback = None
-        self.auto_sync_thread = None
-        self.auto_sync_running = False
+        self.stream = None
+        self.stream_thread = None
         
         # Initialize device states from config
         self._init_device_states()
-        
-        # Firebase config - UPDATE THESE with your Firebase project
-        self.cred_path = cred_path or "firebase_credentials.json"
-        self.database_url = database_url or "https://your-project-id.firebaseio.com"
     
     def _init_device_states(self):
         """Initialize device states from config"""
@@ -114,20 +97,15 @@ class FirebaseHandler:
         """Connect to Firebase"""
         if self.simulation_mode:
             self.connected = True
-            print("[SIM] Firebase simulation mode active")
+            print("[SIM] Firebase simulation mode - pyrebase4 not installed")
             return True
         
         try:
-            # Initialize Firebase app
-            if not firebase_admin._apps:
-                cred = credentials.Certificate(self.cred_path)
-                firebase_admin.initialize_app(cred, {
-                    'databaseURL': self.database_url
-                })
-            
-            self.db_ref = db.reference('power_management')
+            firebase = pyrebase.initialize_app(FIREBASE_CONFIG)
+            self.db = firebase.database()
             self.connected = True
-            print("[FIREBASE] Connected to Firebase")
+            print("[FIREBASE] Connected to Firebase Realtime Database")
+            print(f"[FIREBASE] URL: {FIREBASE_CONFIG['databaseURL']}")
             
             # Start listening for control commands
             self._start_control_listener()
@@ -146,37 +124,43 @@ class FirebaseHandler:
     def disconnect(self):
         """Disconnect from Firebase"""
         self.stop_auto_sync()
-        if self.control_listener:
-            self.control_listener.close()
-            self.control_listener = None
+        if self.stream:
+            self.stream.close()
+            self.stream = None
         self.connected = False
     
     def _start_control_listener(self):
         """Start listening for device control commands from Firebase"""
-        if self.simulation_mode:
+        if self.simulation_mode or not self.db:
             return
         
         try:
-            control_ref = self.db_ref.child('control')
-            self.control_listener = control_ref.listen(self._on_control_change)
-            print("[FIREBASE] Listening for control commands")
+            # Start stream in background thread
+            def stream_handler(message):
+                self._on_control_change(message)
+            
+            self.stream = self.db.child("power_management").child("control").stream(stream_handler)
+            print("[FIREBASE] Listening for control commands...")
         except Exception as e:
             print(f"[ERROR] Failed to start control listener: {e}")
     
-    def _on_control_change(self, event):
-        """Handle control commands from Firebase (app/web)"""
+    def _on_control_change(self, message):
+        """Handle control commands from Firebase"""
         try:
-            if event.data is None:
+            if message["data"] is None:
                 return
             
-            path = event.path.strip('/')
-            data = event.data
+            path = message["path"].strip('/')
+            data = message["data"]
+            event = message["event"]
+            
+            print(f"[FIREBASE] Stream event: {event}, path: {path}, data: {data}")
             
             # Parse path: room1/device0
             if '/' in path:
                 parts = path.split('/')
-                room_key = parts[0]  # room1
-                device_key = parts[1]  # device0
+                room_key = parts[0]
+                device_key = parts[1]
                 
                 room_id = int(room_key.replace('room', ''))
                 device_id = int(device_key.replace('device', ''))
@@ -194,40 +178,24 @@ class FirebaseHandler:
             print(f"[ERROR] Processing control event: {e}")
     
     def _handle_remote_control(self, room_id: int, device_id: int, state: bool):
-        """Handle remote control command and trigger callback"""
-        # Update local state
+        """Handle remote control command"""
         if room_id in self.device_states and device_id in self.device_states[room_id]:
             old_state = self.device_states[room_id][device_id]['state']
             if old_state != state:
                 self.device_states[room_id][device_id]['state'] = state
-                print(f"[FIREBASE] Remote control: Room {room_id}, Device {device_id} -> {'ON' if state else 'OFF'}")
+                print(f"[FIREBASE] Remote: Room {room_id}, Device {device_id} -> {'ON' if state else 'OFF'}")
                 
-                # Trigger callback to update UI and Modbus
                 if self.on_device_change_callback:
                     self.on_device_change_callback(room_id, device_id, state)
     
     def set_device_change_callback(self, callback):
-        """Set callback for device state changes from Firebase
-        
-        Callback signature: callback(room_id: int, device_id: int, state: bool)
-        """
+        """Set callback for device state changes from Firebase"""
         self.on_device_change_callback = callback
     
     # ===== Device Control Methods =====
     
     def set_device_state(self, room_id: int, device_id: int, state: bool) -> bool:
-        """
-        Set device state in Firebase (called from UI)
-        
-        Args:
-            room_id: Room identifier
-            device_id: Device identifier
-            state: True = ON, False = OFF
-        
-        Returns:
-            bool: Success status
-        """
-        # Update local state
+        """Set device state in Firebase"""
         if room_id in self.device_states and device_id in self.device_states[room_id]:
             self.device_states[room_id][device_id]['state'] = state
         
@@ -236,14 +204,13 @@ class FirebaseHandler:
             return True
         
         try:
-            # Update in control path
-            ref = self.db_ref.child(f'control/room{room_id}/device{device_id}')
-            ref.set(state)
+            # Update control path
+            self.db.child("power_management").child("control").child(f"room{room_id}").child(f"device{device_id}").set(state)
             
-            # Update in rooms path
-            device_ref = self.db_ref.child(f'rooms/room{room_id}/devices/device{device_id}/state')
-            device_ref.set(state)
+            # Update rooms path
+            self.db.child("power_management").child("rooms").child(f"room{room_id}").child("devices").child(f"device{device_id}").update({"state": state})
             
+            print(f"[FIREBASE] Set Room {room_id}, Device {device_id}: {'ON' if state else 'OFF'}")
             return True
         except Exception as e:
             print(f"[ERROR] Firebase set device state: {e}")
@@ -258,21 +225,14 @@ class FirebaseHandler:
     # ===== Power Data Methods =====
     
     def update_power_data(self, room_powers: dict, total_power: float):
-        """
-        Update room power data to Firebase
-        
-        Args:
-            room_powers: Dict of room power data
-            total_power: Total power consumption
-        """
+        """Update room power data to Firebase"""
         if self.simulation_mode:
             return True
         
         try:
             # Update each room
             for room_key, room_data in room_powers.items():
-                room_ref = self.db_ref.child(f'rooms/{room_key}')
-                room_ref.update({
+                self.db.child("power_management").child("rooms").child(room_key).update({
                     'name': room_data.get('name', ''),
                     'power': round(room_data.get('power', 0), 2)
                 })
@@ -280,19 +240,16 @@ class FirebaseHandler:
                 # Update devices
                 if 'devices' in room_data:
                     for device_key, device_data in room_data['devices'].items():
-                        device_ref = room_ref.child(f'devices/{device_key}')
-                        device_ref.update(device_data)
+                        self.db.child("power_management").child("rooms").child(room_key).child("devices").child(device_key).update(device_data)
             
             # Update total
-            total_ref = self.db_ref.child('total')
-            total_ref.update({
-                'power': round(total_power, 2),
-                'last_updated': {'.sv': 'timestamp'}
+            self.db.child("power_management").child("total").update({
+                'power': round(total_power, 2)
             })
             
             return True
         except Exception as e:
-            print(f"[ERROR] Firebase update power data: {e}")
+            print(f"[ERROR] Firebase update power: {e}")
             return False
     
     def update_energy_usage(self, energy_kwh: float, monthly_cost: float):
@@ -301,8 +258,7 @@ class FirebaseHandler:
             return True
         
         try:
-            total_ref = self.db_ref.child('total')
-            total_ref.update({
+            self.db.child("power_management").child("total").update({
                 'energy': round(energy_kwh, 2),
                 'monthly_cost': round(monthly_cost, 0)
             })
@@ -319,8 +275,7 @@ class FirebaseHandler:
             return POWER_THRESHOLDS.copy()
         
         try:
-            thresholds_ref = self.db_ref.child('settings/thresholds')
-            data = thresholds_ref.get()
+            data = self.db.child("power_management").child("settings").child("thresholds").get().val()
             if data:
                 return {
                     'warning': data.get('warning', POWER_THRESHOLDS['warning']),
@@ -337,8 +292,7 @@ class FirebaseHandler:
             return True
         
         try:
-            thresholds_ref = self.db_ref.child('settings/thresholds')
-            thresholds_ref.update({
+            self.db.child("power_management").child("settings").child("thresholds").update({
                 'warning': warning,
                 'critical': critical
             })
@@ -355,8 +309,7 @@ class FirebaseHandler:
             return None, None
         
         try:
-            settings_ref = self.db_ref.child('settings')
-            data = settings_ref.get()
+            data = self.db.child("power_management").child("settings").get().val()
             if data:
                 prices = data.get('tier_prices')
                 vat = data.get('vat')
@@ -372,8 +325,7 @@ class FirebaseHandler:
             return True
         
         try:
-            settings_ref = self.db_ref.child('settings')
-            settings_ref.update({
+            self.db.child("power_management").child("settings").update({
                 'tier_prices': prices,
                 'vat': vat
             })
@@ -382,79 +334,12 @@ class FirebaseHandler:
             print(f"[ERROR] Firebase set tier prices: {e}")
             return False
     
-    # ===== Fetch Room Power from Firebase =====
-    
-    def fetch_room_power(self) -> dict:
-        """
-        Fetch room power data from Firebase
-        Returns: {room_id: {'power': W, 'energy': kWh}}
-        """
-        if self.simulation_mode:
-            return {}
-        
-        try:
-            rooms_ref = self.db_ref.child('rooms')
-            data = rooms_ref.get()
-            
-            result = {}
-            if data:
-                for room_key, room_data in data.items():
-                    room_id = int(room_key.replace('room', ''))
-                    result[room_id] = {
-                        'power': room_data.get('power', 0),
-                        'energy': room_data.get('energy', 0),
-                        'name': room_data.get('name', f'Room {room_id}')
-                    }
-            return result
-        except Exception as e:
-            print(f"[ERROR] Firebase fetch room power: {e}")
-            return {}
-    
-    def fetch_total_stats(self) -> dict:
-        """
-        Fetch total statistics from Firebase
-        Returns: {'power': W, 'energy': kWh, 'monthly_cost': VND}
-        """
-        if self.simulation_mode:
-            return {}
-        
-        try:
-            total_ref = self.db_ref.child('total')
-            data = total_ref.get()
-            return data or {}
-        except Exception as e:
-            print(f"[ERROR] Firebase fetch total: {e}")
-            return {}
-    
-    # ===== Auto Sync =====
-    
-    def start_auto_sync(self, interval: float = 5.0):
-        """Start auto-sync thread (not typically needed with listeners)"""
-        if self.auto_sync_running:
-            return
-        
-        self.auto_sync_running = True
-        self.auto_sync_thread = threading.Thread(target=self._auto_sync_loop, args=(interval,), daemon=True)
-        self.auto_sync_thread.start()
-    
     def stop_auto_sync(self):
-        """Stop auto-sync thread"""
-        self.auto_sync_running = False
-        if self.auto_sync_thread:
-            self.auto_sync_thread.join(timeout=1.0)
-            self.auto_sync_thread = None
-    
-    def _auto_sync_loop(self, interval: float):
-        """Auto-sync loop (runs in background thread)"""
-        while self.auto_sync_running:
+        """Stop auto-sync/stream"""
+        if self.stream:
             try:
-                # Fetch latest data from Firebase
-                room_data = self.fetch_room_power()
-                if room_data:
-                    for room_id, data in room_data.items():
-                        self.power_data[room_id] = data
-            except Exception as e:
-                print(f"[ERROR] Auto-sync: {e}")
-            
-            time.sleep(interval)
+                self.stream.close()
+            except:
+                pass
+            self.stream = None
 

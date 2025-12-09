@@ -496,6 +496,7 @@ class MainWindow(QMainWindow):
         # Initialize Firebase handler
         self.firebase = get_firebase()
         self.firebase_sync_enabled = self.firebase.is_connected()
+        print(f"[FIREBASE] Sync enabled: {self.firebase_sync_enabled}, Simulation: {self.firebase.simulation_mode}")
         
         # Set callback for remote control from Firebase (app/web)
         if self.firebase_sync_enabled:
@@ -625,6 +626,7 @@ class MainWindow(QMainWindow):
             state = self.modbus.get_device_state(room_id, device['id'])
             self.update_device1_ui(state)
             # Sync to Firebase
+            print(f"[DEBUG] Toggle device1: room={room_id}, device={device['id']}, state={state}, sync_enabled={self.firebase_sync_enabled}")
             if self.firebase_sync_enabled:
                 self.firebase.set_device_state(room_id, device['id'], state)
     
@@ -637,6 +639,7 @@ class MainWindow(QMainWindow):
             state = self.modbus.get_device_state(room_id, device['id'])
             self.update_device2_ui(state)
             # Sync to Firebase
+            print(f"[DEBUG] Toggle device2: room={room_id}, device={device['id']}, state={state}, sync_enabled={self.firebase_sync_enabled}")
             if self.firebase_sync_enabled:
                 self.firebase.set_device_state(room_id, device['id'], state)
     
