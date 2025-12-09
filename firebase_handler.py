@@ -75,6 +75,7 @@ class FirebaseHandler:
         self.power_data = {}
         self.on_device_change_callback = None
         self.on_settings_change_callback = None
+        self.on_power_change_callback = None
         self.stream = None
         self.power_stream = None
         self.settings_stream = None
@@ -275,6 +276,9 @@ class FirebaseHandler:
                             if old_power != new_power:
                                 self.device_states[room_id][device_id]['power'] = new_power
                                 print(f"[FIREBASE] Power updated: Room {room_id}, Device {device_id}: {old_power}W → {new_power}W")
+                                # Notify callback if registered
+                                if self.on_power_change_callback:
+                                    self.on_power_change_callback(room_id, device_id, new_power)
             
         except Exception as e:
             print(f"[ERROR] Processing power change: {e}")
@@ -358,6 +362,10 @@ class FirebaseHandler:
         """Set callback for settings changes from Firebase"""
         self.on_settings_change_callback = callback
     
+    def set_power_change_callback(self, callback):
+        """Set callback for power changes from Firebase"""
+        self.on_power_change_callback = callback
+    
     def _on_control_change(self, message):
         """Handle control commands from Firebase"""
         try:
@@ -425,6 +433,48 @@ class FirebaseHandler:
         self.on_device_change_callback = callback
     
     # ===== Device Control Methods =====
+    
+    def set_device_power(self, room_id: int, device_id: int, power: float) -> bool:
+        """Set device power rating in Firebase (async - doesn't block UI)"""
+        if room_id in self.device_states and device_id in self.device_states[room_id]:
+            self.device_states[room_id][device_id]['power'] = float(power)
+        
+        if self.simulation_mode:
+            print(f"[SIM] Firebase: Room {room_id}, Device {device_id}: {power}W")
+            return True
+        
+        # Run Firebase update in background thread
+        def update_firebase():
+            try:
+                self.db.child("power_management").child("rooms").child(f"room{room_id}").child("devices").child(f"device{device_id}").update({"power": float(power)})
+                print(f"[FIREBASE] Set Room {room_id}, Device {device_id} power: {power}W")
+            except Exception as e:
+                print(f"[ERROR] Firebase set device power: {e}")
+        
+        thread = threading.Thread(target=update_firebase, daemon=True)
+        thread.start()
+        return True
+    
+    def set_device_power(self, room_id: int, device_id: int, power: float) -> bool:
+        """Set device power rating in Firebase (async - doesn't block UI)"""
+        if room_id in self.device_states and device_id in self.device_states[room_id]:
+            self.device_states[room_id][device_id]['power'] = float(power)
+        
+        if self.simulation_mode:
+            print(f"[SIM] Firebase: Room {room_id}, Device {device_id}: {power}W")
+            return True
+        
+        # Run Firebase update in background thread
+        def update_firebase():
+            try:
+                self.db.child("power_management").child("rooms").child(f"room{room_id}").child("devices").child(f"device{device_id}").update({"power": float(power)})
+                print(f"[FIREBASE] Set Room {room_id}, Device {device_id} power: {power}W")
+            except Exception as e:
+                print(f"[ERROR] Firebase set device power: {e}")
+        
+        thread = threading.Thread(target=update_firebase, daemon=True)
+        thread.start()
+        return True
     
     def set_device_state(self, room_id: int, device_id: int, state: bool) -> bool:
         """Set device state in Firebase (async - doesn't block UI)"""
