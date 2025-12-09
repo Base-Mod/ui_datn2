@@ -496,6 +496,7 @@ class MainWindow(QMainWindow):
         # Set callbacks for remote control and settings changes from Firebase
         self.firebase.set_device_change_callback(self.on_firebase_device_change)
         self.firebase.set_settings_change_callback(self.on_firebase_settings_change)
+        self.firebase.set_power_change_callback(self.on_firebase_power_change)
         
         # Initialize electricity calculator
         self.calculator = ElectricityCalculator()
@@ -776,6 +777,23 @@ class MainWindow(QMainWindow):
         # Call update on main thread
         QTimer.singleShot(0, update_ui)
     
+    def on_firebase_power_change(self, room_id: int, device_id: int, power: float):
+        """Handle device power changes from Firebase"""
+        print(f"[UI] Firebase power change: Room {room_id}, Device {device_id} -> {power}W")
+        
+        # Update UI in main thread
+        def update_ui():
+            # Update power input if this is the current room being displayed
+            if room_id == self.current_room['id']:
+                devices = self.current_room['devices']
+                if device_id == devices[0]['id']:
+                    self.ui.device1PowerInput.setValue(int(power))
+                elif len(devices) > 1 and device_id == devices[1]['id']:
+                    self.ui.device2PowerInput.setValue(int(power))
+        
+        # Call update on main thread
+        QTimer.singleShot(0, update_ui)
+    
     def prev_room(self):
         self.current_room_index = (self.current_room_index - 1) % len(self.rooms)
         self.current_room = self.rooms[self.current_room_index]
@@ -824,20 +842,44 @@ class MainWindow(QMainWindow):
             self.ui.device2Status.setStyleSheet(
                 "color: #e74c3c; font-size: 12px; font-weight: bold; background: transparent; border: none;")
     
+    def on_device_power_changed(self, room_id, device_id, power):
+        """Handle device power change from UI"""
+        print(f"[UI] Device power changed: Room {room_id}, Device {device_id} -> {power}W")
+        # Update Firebase with new power value
+        self.firebase.set_device_power(room_id, device_id, power)
+    
     def update_room_display(self):
         """Update control page for current room"""
         room_id = self.current_room['id']
         self.ui.name_ctl_3.setText(str(room_id))
         
-        # Update device labels
+        # Update device labels and power inputs
         devices = self.current_room['devices']
         if len(devices) >= 1:
             self.ui.label_8.setText(devices[0]['name'])
+            # Get device power from Firebase
+            device_power1 = self.firebase.get_device_power(room_id, devices[0]['id'])
+            self.ui.device1PowerInput.setValue(int(device_power1))
+            # Connect power input change event (disconnect first to avoid duplicates)
+            try:
+                self.ui.device1PowerInput.valueChanged.disconnect()
+            except:
+                pass
+            self.ui.device1PowerInput.valueChanged.connect(lambda value, rid=room_id, did=devices[0]['id']: self.on_device_power_changed(rid, did, value))
             state1 = self.firebase.get_device_state(room_id, devices[0]['id'])
             self.update_device1_ui(state1)
         
         if len(devices) >= 2:
             self.ui.label_9.setText(devices[1]['name'])
+            # Get device power from Firebase
+            device_power2 = self.firebase.get_device_power(room_id, devices[1]['id'])
+            self.ui.device2PowerInput.setValue(int(device_power2))
+            # Connect power input change event (disconnect first to avoid duplicates)
+            try:
+                self.ui.device2PowerInput.valueChanged.disconnect()
+            except:
+                pass
+            self.ui.device2PowerInput.valueChanged.connect(lambda value, rid=room_id, did=devices[1]['id']: self.on_device_power_changed(rid, did, value))
             state2 = self.firebase.get_device_state(room_id, devices[1]['id'])
             self.update_device2_ui(state2)
     
@@ -918,22 +960,6 @@ class MainWindow(QMainWindow):
         self.critical_threshold = self.ui.criticalThresholdInput.value()
         
         # Save room thresholds locally (not synced to Firebase)
-        for i, spin in enumerate(self.ui.roomThresholdInputs):
-            self.room_thresholds[i] = spin.value()
-        
-        # Sync to Firebase
-        self.firebase.set_thresholds(self.warning_threshold, self.critical_threshold)
-        
-        # Visual feedback
-        self.ui.saveThresholdBtn.setText("Da luu")
-        QTimer.singleShot(1500, lambda: self.ui.saveThresholdBtn.setText("Luu nguong"))
-    
-    def save_thresholds(self):
-        """Save threshold settings"""
-        self.warning_threshold = self.ui.warningThresholdInput.value()
-        self.critical_threshold = self.ui.criticalThresholdInput.value()
-        
-        # Save room thresholds
         for i, spin in enumerate(self.ui.roomThresholdInputs):
             self.room_thresholds[i] = spin.value()
         
