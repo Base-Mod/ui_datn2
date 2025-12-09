@@ -580,18 +580,16 @@ class MainWindow(QMainWindow):
     
     def update_nav_buttons(self):
         current = self.ui.stackedWidget.currentWidget()
-        # Reset all button styles
+        # Reset all button styles using stored styles
         buttons = [self.ui.pushButton_2, self.ui.pushButton_3, 
                    self.ui.pushButton, self.ui.pushButton_4]
         pages = [self.ui.HOME, self.ui.CONTROL, self.ui.REPORT, self.ui.page]
         
         for btn, page in zip(buttons, pages):
             if current == page:
-                btn.setStyleSheet(
-                    "background-color: #415a77; color: #00d4ff; "
-                    "border-left: 3px solid #00d4ff;")
+                btn.setStyleSheet(self.ui.menuButtonActiveStyle)
             else:
-                btn.setStyleSheet("")
+                btn.setStyleSheet(self.ui.menuButtonStyle)
     
     def toggle_device1(self):
         room_id = self.current_room['id']

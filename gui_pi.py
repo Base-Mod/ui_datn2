@@ -28,64 +28,98 @@ class Ui_MainWindow(object):
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 75, 290))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayoutWidget.setStyleSheet("""
-            QWidget {
-                background-color: #0d1b2a;
-                border-right: 2px solid #1b4965;
+            QWidget#verticalLayoutWidget {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #0d1b2a, stop:0.5 #1b263b, stop:1 #0d1b2a);
+                border-right: 1px solid #00d4ff;
             }
         """)
         
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
-        self.verticalLayout.setContentsMargins(5, 10, 5, 10)
-        self.verticalLayout.setSpacing(8)
+        self.verticalLayout.setContentsMargins(0, 8, 0, 8)
+        self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName("verticalLayout")
         
-        # Style for menu buttons
+        # Style for menu buttons - Professional look
         menuButtonStyle = """
             QPushButton {
                 background-color: transparent;
                 color: #778da9;
                 border: none;
                 border-left: 3px solid transparent;
-                padding: 12px 5px;
-                font-size: 9px;
+                border-bottom: 1px solid #1b4965;
+                padding: 10px 8px;
+                font-size: 10px;
                 font-weight: bold;
                 text-align: center;
             }
             QPushButton:hover {
-                background-color: #1b263b;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #1b4965, stop:1 transparent);
                 color: #00d4ff;
                 border-left: 3px solid #00d4ff;
             }
             QPushButton:pressed, QPushButton:checked {
-                background-color: #1b4965;
-                color: #00d4ff;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #00d4ff, stop:0.3 #1b4965, stop:1 transparent);
+                color: #ffffff;
+                border-left: 3px solid #00d4ff;
+            }
+        """
+        
+        # Active button style
+        menuButtonActiveStyle = """
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #00d4ff, stop:0.15 #1b4965, stop:1 transparent);
+                color: #ffffff;
+                border: none;
+                border-left: 3px solid #00d4ff;
+                border-bottom: 1px solid #1b4965;
+                padding: 10px 8px;
+                font-size: 10px;
+                font-weight: bold;
+                text-align: center;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #00d4ff, stop:0.2 #1b4965, stop:1 transparent);
+                color: #ffffff;
                 border-left: 3px solid #00d4ff;
             }
         """
         
         self.pushButton_2 = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.pushButton_2.setObjectName("pushButton_2")
-        self.pushButton_2.setStyleSheet(menuButtonStyle)
-        self.pushButton_2.setMinimumHeight(50)
+        self.pushButton_2.setStyleSheet(menuButtonActiveStyle)  # Default active
+        self.pushButton_2.setMinimumHeight(55)
+        self.pushButton_2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.verticalLayout.addWidget(self.pushButton_2)
         
         self.pushButton_3 = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.pushButton_3.setObjectName("pushButton_3")
         self.pushButton_3.setStyleSheet(menuButtonStyle)
-        self.pushButton_3.setMinimumHeight(50)
+        self.pushButton_3.setMinimumHeight(55)
+        self.pushButton_3.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.verticalLayout.addWidget(self.pushButton_3)
         
         self.pushButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.pushButton.setObjectName("pushButton")
         self.pushButton.setStyleSheet(menuButtonStyle)
-        self.pushButton.setMinimumHeight(50)
+        self.pushButton.setMinimumHeight(55)
+        self.pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.verticalLayout.addWidget(self.pushButton)
         
         self.pushButton_4 = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.pushButton_4.setObjectName("pushButton_4")
         self.pushButton_4.setStyleSheet(menuButtonStyle)
-        self.pushButton_4.setMinimumHeight(50)
+        self.pushButton_4.setMinimumHeight(55)
+        self.pushButton_4.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.verticalLayout.addWidget(self.pushButton_4)
+        
+        # Store styles for later use
+        self.menuButtonStyle = menuButtonStyle
+        self.menuButtonActiveStyle = menuButtonActiveStyle
         
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
