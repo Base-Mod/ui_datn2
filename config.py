@@ -67,3 +67,9 @@ ELECTRICITY_TIERS = [
 
 # VAT Rate
 VAT_RATE = 0.08  # 8%
+
+# Power Threshold Settings (Watts)
+POWER_THRESHOLDS = {
+    'warning': 500,    # Warning threshold (W)
+    'critical': 1000,  # Critical threshold (W)
+}

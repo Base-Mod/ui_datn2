@@ -199,12 +199,27 @@ class Ui_MainWindow(object):
         self.totalPowerLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.totalPowerLabel.setText("Tổng: 0 W")
         
-        # Table (smaller, on the right)
+        # Pie Chart Area (right side)
+        self.pieWidget = QtWidgets.QWidget(self.REPORT)
+        self.pieWidget.setGeometry(QtCore.QRect(200, 35, 100, 145))
+        self.pieWidget.setObjectName("pieWidget")
+        self.pieWidget.setStyleSheet("background-color: #0d1b2a; border-radius: 8px; border: 1px solid #415a77;")
+        
+        # Table (smaller, bottom right)
         self.REPORTTB = QtWidgets.QTableWidget(self.REPORT)
-        self.REPORTTB.setGeometry(QtCore.QRect(200, 35, 190, 145))
+        self.REPORTTB.setGeometry(QtCore.QRect(305, 35, 90, 145))
         self.REPORTTB.setObjectName("REPORTTB")
         self.REPORTTB.setColumnCount(0)
         self.REPORTTB.setRowCount(0)
+        
+        # Warning Label
+        self.warningLabel = QtWidgets.QLabel(self.REPORT)
+        self.warningLabel.setGeometry(QtCore.QRect(200, 5, 195, 25))
+        self.warningLabel.setStyleSheet("color: #2ecc71; font-size: 9px; font-weight: bold;")
+        self.warningLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.warningLabel.setText("")
+        self.warningLabel.setObjectName("warningLabel")
+        
         self.stackedWidget.addWidget(self.REPORT)
         self.page = QtWidgets.QWidget()
         self.page.setObjectName("page")
@@ -221,11 +236,57 @@ class Ui_MainWindow(object):
         self.name_ctl_4.setObjectName("name_ctl_4")
         # Electricity tier info
         self.tierLabel = QtWidgets.QLabel(self.page)
-        self.tierLabel.setGeometry(QtCore.QRect(10, 40, 380, 150))
-        self.tierLabel.setStyleSheet("color: #778da9; font-size: 9px;")
+        self.tierLabel.setGeometry(QtCore.QRect(10, 40, 180, 130))
+        self.tierLabel.setStyleSheet("color: #778da9; font-size: 8px;")
         self.tierLabel.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
         self.tierLabel.setWordWrap(True)
         self.tierLabel.setObjectName("tierLabel")
+        
+        # Threshold Settings Section
+        self.thresholdTitle = QtWidgets.QLabel(self.page)
+        self.thresholdTitle.setGeometry(QtCore.QRect(200, 40, 180, 20))
+        self.thresholdTitle.setText("CÀI ĐẶT NGƯỠNG")
+        self.thresholdTitle.setStyleSheet("color: #f39c12; font-size: 9px; font-weight: bold;")
+        self.thresholdTitle.setAlignment(QtCore.Qt.AlignCenter)
+        
+        # Warning threshold
+        self.warningThresholdLabel = QtWidgets.QLabel(self.page)
+        self.warningThresholdLabel.setGeometry(QtCore.QRect(200, 65, 80, 20))
+        self.warningThresholdLabel.setText("Cảnh báo:")
+        self.warningThresholdLabel.setStyleSheet("color: #f39c12; font-size: 9px;")
+        
+        self.warningThresholdInput = QtWidgets.QSpinBox(self.page)
+        self.warningThresholdInput.setGeometry(QtCore.QRect(280, 65, 70, 22))
+        self.warningThresholdInput.setRange(100, 5000)
+        self.warningThresholdInput.setValue(500)
+        self.warningThresholdInput.setSuffix(" W")
+        self.warningThresholdInput.setStyleSheet(
+            "background-color: #1b263b; color: #f39c12; border: 1px solid #f39c12; "
+            "border-radius: 4px; padding: 2px;")
+        self.warningThresholdInput.setObjectName("warningThresholdInput")
+        
+        # Critical threshold
+        self.criticalThresholdLabel = QtWidgets.QLabel(self.page)
+        self.criticalThresholdLabel.setGeometry(QtCore.QRect(200, 95, 80, 20))
+        self.criticalThresholdLabel.setText("Nguy hiểm:")
+        self.criticalThresholdLabel.setStyleSheet("color: #e74c3c; font-size: 9px;")
+        
+        self.criticalThresholdInput = QtWidgets.QSpinBox(self.page)
+        self.criticalThresholdInput.setGeometry(QtCore.QRect(280, 95, 70, 22))
+        self.criticalThresholdInput.setRange(200, 10000)
+        self.criticalThresholdInput.setValue(1000)
+        self.criticalThresholdInput.setSuffix(" W")
+        self.criticalThresholdInput.setStyleSheet(
+            "background-color: #1b263b; color: #e74c3c; border: 1px solid #e74c3c; "
+            "border-radius: 4px; padding: 2px;")
+        self.criticalThresholdInput.setObjectName("criticalThresholdInput")
+        
+        # Save button
+        self.saveThresholdBtn = QtWidgets.QPushButton(self.page)
+        self.saveThresholdBtn.setGeometry(QtCore.QRect(240, 130, 70, 25))
+        self.saveThresholdBtn.setText("Lưu")
+        self.saveThresholdBtn.setObjectName("saveThresholdBtn")
+        
         self.stackedWidget.addWidget(self.page)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)

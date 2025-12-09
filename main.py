@@ -6,15 +6,16 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidgetItem,
 from PyQt5.QtCore import Qt, QTimer, QDateTime, QRect
 from PyQt5.QtGui import QColor, QFont, QPainter, QBrush, QPen, QLinearGradient
 from gui_pi import Ui_MainWindow
-from config import ROOMS
+from config import ROOMS, POWER_THRESHOLDS
 from modbus_handler import ModbusHandler
 from electricity_calc import ElectricityCalculator, UsageTracker
+import math
 
 
 class PowerChart(QWidget):
-    """Custom bar chart widget for power consumption"""
+    """Custom bar chart widget for power consumption - clickable"""
     
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, on_room_click=None):
         super().__init__(parent)
         self.data = []  # [(room_name, power), ...]
         self.colors = [
@@ -23,12 +24,26 @@ class PowerChart(QWidget):
             QColor("#f39c12"),  # Orange
             QColor("#e74c3c"),  # Red
         ]
+        self.bar_rects = []  # Store bar positions for click detection
+        self.selected_index = -1
+        self.on_room_click = on_room_click
         self.setAutoFillBackground(True)
     
     def set_data(self, data):
         """Set chart data: [(room_name, power), ...]"""
         self.data = data
         self.update()
+    
+    def mousePressEvent(self, event):
+        """Handle click on bars"""
+        pos = event.pos()
+        for i, rect in enumerate(self.bar_rects):
+            if rect.contains(pos):
+                self.selected_index = i
+                if self.on_room_click:
+                    self.on_room_click(i)
+                self.update()
+                break
     
     def paintEvent(self, event):
         if not self.data:
@@ -57,6 +72,8 @@ class PowerChart(QWidget):
         bar_width = w // len(self.data) - 8
         bar_spacing = (w - bar_width * len(self.data)) // (len(self.data) + 1)
         
+        self.bar_rects = []
+        
         for i, (name, power) in enumerate(self.data):
             # Calculate bar height
             bar_height = int((power / max_val) * h * 0.85)
@@ -66,16 +83,32 @@ class PowerChart(QWidget):
             x = margin_left + bar_spacing + i * (bar_width + bar_spacing)
             y = margin_top + h - bar_height
             
+            # Store rect for click detection
+            self.bar_rects.append(QRect(x, y, bar_width, bar_height))
+            
             # Create gradient
             gradient = QLinearGradient(x, y, x, y + bar_height)
             color = self.colors[i % len(self.colors)]
-            gradient.setColorAt(0, color.lighter(120))
-            gradient.setColorAt(1, color)
+            
+            # Highlight selected bar
+            if i == self.selected_index:
+                gradient.setColorAt(0, QColor("#ffffff"))
+                gradient.setColorAt(0.3, color.lighter(150))
+                gradient.setColorAt(1, color)
+            else:
+                gradient.setColorAt(0, color.lighter(120))
+                gradient.setColorAt(1, color)
             
             # Draw bar
             painter.setBrush(QBrush(gradient))
             painter.setPen(Qt.NoPen)
             painter.drawRoundedRect(x, y, bar_width, bar_height, 3, 3)
+            
+            # Draw selection indicator
+            if i == self.selected_index:
+                painter.setPen(QPen(QColor("#ffffff"), 2))
+                painter.setBrush(Qt.NoBrush)
+                painter.drawRoundedRect(x-1, y-1, bar_width+2, bar_height+2, 4, 4)
             
             # Draw value on top
             painter.setPen(QPen(QColor("#e0e1dd")))
@@ -88,6 +121,93 @@ class PowerChart(QWidget):
             painter.setFont(QFont("Arial", 7))
             painter.drawText(x - 5, margin_top + h + 3, bar_width + 10, 15, 
                            Qt.AlignCenter, name.replace("Phòng ", "P"))
+
+
+class PieChart(QWidget):
+    """Pie chart for room device breakdown"""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.data = []  # [(device_name, power, is_on), ...]
+        self.room_name = ""
+        self.colors = [
+            QColor("#00d4ff"),
+            QColor("#2ecc71"),
+            QColor("#f39c12"),
+            QColor("#9b59b6"),
+        ]
+        self.setAutoFillBackground(True)
+    
+    def set_data(self, room_name, data):
+        """Set pie data: [(device_name, power, is_on), ...]"""
+        self.room_name = room_name
+        self.data = data
+        self.update()
+    
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        w = self.width()
+        h = self.height()
+        
+        # Draw room name
+        painter.setPen(QPen(QColor("#00d4ff")))
+        painter.setFont(QFont("Arial", 9, QFont.Bold))
+        painter.drawText(0, 0, w, 18, Qt.AlignCenter, self.room_name)
+        
+        if not self.data:
+            painter.setPen(QPen(QColor("#778da9")))
+            painter.setFont(QFont("Arial", 8))
+            painter.drawText(0, 20, w, h-20, Qt.AlignCenter, "Nhấp phòng\nđể xem")
+            return
+        
+        # Calculate total
+        total = sum(p for _, p, on in self.data if on)
+        if total == 0:
+            painter.setPen(QPen(QColor("#778da9")))
+            painter.setFont(QFont("Arial", 8))
+            painter.drawText(0, 20, w, h-40, Qt.AlignCenter, "Tất cả OFF")
+            return
+        
+        # Pie chart dimensions
+        pie_size = min(w, h - 40) - 20
+        pie_x = (w - pie_size) // 2
+        pie_y = 20
+        
+        # Draw pie slices
+        start_angle = 90 * 16  # Start from top
+        for i, (name, power, is_on) in enumerate(self.data):
+            if not is_on or power == 0:
+                continue
+            
+            span_angle = int((power / total) * 360 * 16)
+            
+            color = self.colors[i % len(self.colors)]
+            painter.setBrush(QBrush(color))
+            painter.setPen(QPen(QColor("#0d1b2a"), 2))
+            painter.drawPie(pie_x, pie_y, pie_size, pie_size, start_angle, span_angle)
+            
+            start_angle += span_angle
+        
+        # Draw legend
+        legend_y = pie_y + pie_size + 5
+        legend_x = 5
+        painter.setFont(QFont("Arial", 7))
+        
+        for i, (name, power, is_on) in enumerate(self.data):
+            color = self.colors[i % len(self.colors)] if is_on else QColor("#555")
+            
+            # Color box
+            painter.setBrush(QBrush(color))
+            painter.setPen(Qt.NoPen)
+            painter.drawRect(legend_x, legend_y + i * 12, 8, 8)
+            
+            # Text
+            painter.setPen(QPen(QColor("#e0e1dd") if is_on else QColor("#555")))
+            text = f"{name}: {power}W" if is_on else f"{name}: OFF"
+            painter.drawText(legend_x + 12, legend_y + i * 12 - 1, w - 20, 12, 
+                           Qt.AlignLeft | Qt.AlignVCenter, text)
 
 
 def hide_taskbar():
@@ -384,6 +504,12 @@ class MainWindow(QMainWindow):
         # Setup power chart
         self.setup_power_chart()
         
+        # Setup pie chart
+        self.setup_pie_chart()
+        
+        # Setup threshold settings
+        self.setup_thresholds()
+        
         # Setup status bar with time
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_status)
@@ -549,27 +675,78 @@ class MainWindow(QMainWindow):
                     "border-radius: 20px; font-size: 11px; font-weight: bold;")
     
     def setup_report_table(self):
-        # Setup table columns - smaller for chart layout
-        self.ui.REPORTTB.setColumnCount(3)
-        self.ui.REPORTTB.setHorizontalHeaderLabels(
-            ["Phòng", "TB", "P(W)"])
+        # Setup table columns - compact for small area
+        self.ui.REPORTTB.setColumnCount(2)
+        self.ui.REPORTTB.setHorizontalHeaderLabels(["TB", "W"])
         
         # Set column widths
         header = self.ui.REPORTTB.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
         header.setSectionResizeMode(1, QHeaderView.Stretch)
-        header.setSectionResizeMode(2, QHeaderView.Stretch)
+        
+        # Hide row numbers
+        self.ui.REPORTTB.verticalHeader().setVisible(False)
         
         self.update_report_table()
     
     def setup_power_chart(self):
         """Setup the power chart widget"""
         # Replace the placeholder widget with our custom chart
-        self.power_chart = PowerChart(self.ui.chartWidget)
+        self.power_chart = PowerChart(self.ui.chartWidget, on_room_click=self.on_room_selected)
         self.power_chart.setGeometry(0, 0, 
                                      self.ui.chartWidget.width(), 
                                      self.ui.chartWidget.height())
+        self.selected_room_index = -1
         self.update_power_chart()
+    
+    def setup_pie_chart(self):
+        """Setup the pie chart widget"""
+        self.pie_chart = PieChart(self.ui.pieWidget)
+        self.pie_chart.setGeometry(0, 0,
+                                   self.ui.pieWidget.width(),
+                                   self.ui.pieWidget.height())
+    
+    def setup_thresholds(self):
+        """Setup threshold settings"""
+        self.warning_threshold = POWER_THRESHOLDS['warning']
+        self.critical_threshold = POWER_THRESHOLDS['critical']
+        
+        # Set initial values
+        self.ui.warningThresholdInput.setValue(self.warning_threshold)
+        self.ui.criticalThresholdInput.setValue(self.critical_threshold)
+        
+        # Connect save button
+        self.ui.saveThresholdBtn.clicked.connect(self.save_thresholds)
+    
+    def save_thresholds(self):
+        """Save threshold settings"""
+        self.warning_threshold = self.ui.warningThresholdInput.value()
+        self.critical_threshold = self.ui.criticalThresholdInput.value()
+        
+        # Visual feedback
+        self.ui.saveThresholdBtn.setText("✓")
+        QTimer.singleShot(1000, lambda: self.ui.saveThresholdBtn.setText("Lưu"))
+    
+    def on_room_selected(self, room_index):
+        """Handle room selection from bar chart"""
+        self.selected_room_index = room_index
+        self.update_pie_chart()
+    
+    def update_pie_chart(self):
+        """Update pie chart for selected room"""
+        if self.selected_room_index < 0 or self.selected_room_index >= len(self.rooms):
+            self.pie_chart.set_data("", [])
+            return
+        
+        room = self.rooms[self.selected_room_index]
+        pie_data = []
+        
+        for device in room['devices']:
+            state = self.modbus.get_device_state(room['id'], device['id'])
+            power = device['power']
+            pie_data.append((device['name'], power, state))
+        
+        self.pie_chart.set_data(room['name'], pie_data)
     
     def update_power_chart(self):
         """Update power chart with current room power data"""
@@ -583,6 +760,9 @@ class MainWindow(QMainWindow):
         
         self.power_chart.set_data(chart_data)
         self.ui.totalPowerLabel.setText(f"Tổng: {int(total_power)} W")
+        
+        # Check thresholds and update warning
+        self.check_power_threshold(total_power)
     
     def update_report_table(self):
         """Update report table with current device states"""
@@ -596,23 +776,20 @@ class MainWindow(QMainWindow):
                 state = self.modbus.get_device_state(room['id'], device['id'])
                 power = device['power'] if state else 0
                 
-                # Shortened room name
-                room_short = room['name'].replace("Phòng ", "P")
-                self.ui.REPORTTB.setItem(row, 0, QTableWidgetItem(room_short))
-                
                 # Device with status color
-                device_item = QTableWidgetItem(device['name'])
+                device_text = f"{room['name'][-1]}:{device['name'][:3]}"
+                device_item = QTableWidgetItem(device_text)
                 if state:
                     device_item.setForeground(QColor("#2ecc71"))
                 else:
                     device_item.setForeground(QColor("#778da9"))
-                self.ui.REPORTTB.setItem(row, 1, device_item)
+                self.ui.REPORTTB.setItem(row, 0, device_item)
                 
                 # Power
                 power_item = QTableWidgetItem(str(power))
                 if power > 0:
                     power_item.setForeground(QColor("#00d4ff"))
-                self.ui.REPORTTB.setItem(row, 2, power_item)
+                self.ui.REPORTTB.setItem(row, 1, power_item)
                 row += 1
     
     def update_status(self):
@@ -629,6 +806,33 @@ class MainWindow(QMainWindow):
         # Update report table and chart periodically
         self.update_report_table()
         self.update_power_chart()
+        self.update_pie_chart()
+    
+    def check_power_threshold(self, total_power):
+        """Check power against thresholds and show warnings"""
+        if total_power >= self.critical_threshold:
+            # Critical warning - red flashing
+            self.ui.warningLabel.setText(f"⚠ NGUY HIỂM: {int(total_power)}W!")
+            self.ui.warningLabel.setStyleSheet(
+                "color: #e74c3c; font-size: 10px; font-weight: bold; "
+                "background-color: rgba(231, 76, 60, 0.3); border-radius: 4px;")
+            self.ui.totalPowerLabel.setStyleSheet(
+                "color: #e74c3c; font-size: 10px; font-weight: bold;")
+        elif total_power >= self.warning_threshold:
+            # Warning - orange
+            self.ui.warningLabel.setText(f"⚠ CẢNH BÁO: {int(total_power)}W")
+            self.ui.warningLabel.setStyleSheet(
+                "color: #f39c12; font-size: 10px; font-weight: bold; "
+                "background-color: rgba(243, 156, 18, 0.2); border-radius: 4px;")
+            self.ui.totalPowerLabel.setStyleSheet(
+                "color: #f39c12; font-size: 10px; font-weight: bold;")
+        else:
+            # Normal - green
+            self.ui.warningLabel.setText("✓ Bình thường")
+            self.ui.warningLabel.setStyleSheet(
+                "color: #2ecc71; font-size: 9px; font-weight: bold;")
+            self.ui.totalPowerLabel.setStyleSheet(
+                "color: #00d4ff; font-size: 10px; font-weight: bold;")
     
     def closeEvent(self, event):
         """Clean up on close"""
