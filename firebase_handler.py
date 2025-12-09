@@ -256,7 +256,17 @@ class FirebaseHandler:
         return self.set_device_state(room_id, device_id, new_state)
     
     def get_room_power(self, room_id: int) -> float:
-        """Get total power for a room based on device states"""
+        """Get total power for a room from Firebase"""
+        # Try to read from Firebase first
+        if not self.simulation_mode and self.db:
+            try:
+                data = self.db.child("power_management").child("rooms").child(f"room{room_id}").child("power").get().val()
+                if data is not None:
+                    return float(data)
+            except Exception as e:
+                print(f"[ERROR] Get room power: {e}")
+        
+        # Fallback: calculate from device states
         total = 0.0
         if room_id in self.device_states:
             for device_id, device_data in self.device_states[room_id].items():
@@ -265,11 +275,36 @@ class FirebaseHandler:
         return total
     
     def get_active_power(self) -> float:
-        """Get total active power for all rooms"""
+        """Get total active power from Firebase"""
+        # Try to read from Firebase first
+        if not self.simulation_mode and self.db:
+            try:
+                data = self.db.child("power_management").child("total").child("power").get().val()
+                if data is not None:
+                    return float(data)
+            except Exception as e:
+                print(f"[ERROR] Get total power: {e}")
+        
+        # Fallback: sum all room powers
         total = 0.0
         for room_id in self.device_states:
             total += self.get_room_power(room_id)
         return total
+    
+    def get_device_power(self, room_id: int, device_id: int) -> float:
+        """Get power for a specific device from Firebase"""
+        if not self.simulation_mode and self.db:
+            try:
+                data = self.db.child("power_management").child("rooms").child(f"room{room_id}").child("devices").child(f"device{device_id}").child("power").get().val()
+                if data is not None:
+                    return float(data)
+            except Exception as e:
+                print(f"[ERROR] Get device power: {e}")
+        
+        # Fallback to config
+        if room_id in self.device_states and device_id in self.device_states[room_id]:
+            return self.device_states[room_id][device_id]['power']
+        return 0.0
     
     def disconnect(self):
         """Disconnect from Firebase"""
