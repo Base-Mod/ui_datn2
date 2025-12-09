@@ -493,8 +493,9 @@ class MainWindow(QMainWindow):
         self.firebase = get_firebase()
         print(f"[FIREBASE] Connected: {self.firebase.is_connected()}, Simulation: {self.firebase.simulation_mode}")
         
-        # Set callback for remote control from Firebase (app/web)
+        # Set callbacks for remote control and settings changes from Firebase
         self.firebase.set_device_change_callback(self.on_firebase_device_change)
+        self.firebase.set_settings_change_callback(self.on_firebase_settings_change)
         
         # Initialize electricity calculator
         self.calculator = ElectricityCalculator()
@@ -686,6 +687,54 @@ class MainWindow(QMainWindow):
         # Call update on main thread
         QTimer.singleShot(0, update_ui)
     
+    def on_firebase_settings_change(self, path: str, data):
+        """Handle settings changes from Firebase (thresholds, tier prices)"""
+        print(f"[UI] Firebase settings changed: {path} = {data}")
+        
+        # Update UI in main thread
+        def update_ui():
+            # Handle threshold changes
+            if path == "thresholds/warning" and isinstance(data, (int, float)):
+                self.warning_threshold = int(data)
+                self.ui.warningThresholdInput.setValue(self.warning_threshold)
+                print(f"[UI] Updated warning threshold to {self.warning_threshold}W")
+            elif path == "thresholds/critical" and isinstance(data, (int, float)):
+                self.critical_threshold = int(data)
+                self.ui.criticalThresholdInput.setValue(self.critical_threshold)
+                print(f"[UI] Updated critical threshold to {self.critical_threshold}W")
+            
+            # Handle tier price changes
+            elif path.startswith("tier_prices/") and isinstance(data, (int, float, str)):
+                try:
+                    tier_num = int(path.split('/')[-1].replace('tier', ''))
+                    if 1 <= tier_num <= 6:
+                        price = int(data)
+                        self.ui.tierInputs[tier_num-1].setValue(price)
+                        print(f"[UI] Updated tier{tier_num} price to {price} VND/kWh")
+                        
+                        # Update calculator
+                        tier_prices = [spin.value() for spin in self.ui.tierInputs]
+                        vat = self.ui.vatInput.value() / 100.0
+                        self.calculator.update_tier_prices(tier_prices, vat)
+                except:
+                    pass
+            
+            # Handle VAT changes
+            elif path == "vat" and isinstance(data, (int, float, str)):
+                try:
+                    vat_percent = float(data)
+                    self.ui.vatInput.setValue(vat_percent)
+                    print(f"[UI] Updated VAT to {vat_percent}%")
+                    
+                    # Update calculator
+                    tier_prices = [spin.value() for spin in self.ui.tierInputs]
+                    self.calculator.update_tier_prices(tier_prices, vat_percent / 100.0)
+                except:
+                    pass
+        
+        # Call update on main thread
+        QTimer.singleShot(0, update_ui)
+    
     def prev_room(self):
         self.current_room_index = (self.current_room_index - 1) % len(self.rooms)
         self.current_room = self.rooms[self.current_room_index]
@@ -786,9 +835,16 @@ class MainWindow(QMainWindow):
                                    self.ui.pieWidget.height())
     
     def setup_thresholds(self):
-        """Setup threshold settings"""
-        self.warning_threshold = POWER_THRESHOLDS['warning']
-        self.critical_threshold = POWER_THRESHOLDS['critical']
+        """Setup threshold settings - load from Firebase if available"""
+        # Try to load from Firebase first
+        fb_thresholds = self.firebase.get_thresholds()
+        if fb_thresholds:
+            self.warning_threshold = fb_thresholds.get('warning', POWER_THRESHOLDS['warning'])
+            self.critical_threshold = fb_thresholds.get('critical', POWER_THRESHOLDS['critical'])
+            print(f"[SETUP] Loaded thresholds from Firebase: {self.warning_threshold}W / {self.critical_threshold}W")
+        else:
+            self.warning_threshold = POWER_THRESHOLDS['warning']
+            self.critical_threshold = POWER_THRESHOLDS['critical']
         
         # Room thresholds (default 200W each)
         self.room_thresholds = [200, 200, 200, 200]
@@ -804,6 +860,22 @@ class MainWindow(QMainWindow):
         # Connect save buttons
         self.ui.saveThresholdBtn.clicked.connect(self.save_thresholds)
         self.ui.saveTierBtn.clicked.connect(self.save_tier_prices)
+    
+    def save_thresholds(self):
+        """Save threshold settings to Firebase"""
+        self.warning_threshold = self.ui.warningThresholdInput.value()
+        self.critical_threshold = self.ui.criticalThresholdInput.value()
+        
+        # Save room thresholds locally (not synced to Firebase)
+        for i, spin in enumerate(self.ui.roomThresholdInputs):
+            self.room_thresholds[i] = spin.value()
+        
+        # Sync to Firebase
+        self.firebase.set_thresholds(self.warning_threshold, self.critical_threshold)
+        
+        # Visual feedback
+        self.ui.saveThresholdBtn.setText("Da luu")
+        QTimer.singleShot(1500, lambda: self.ui.saveThresholdBtn.setText("Luu nguong"))
     
     def save_thresholds(self):
         """Save threshold settings"""
@@ -822,7 +894,7 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(1500, lambda: self.ui.saveThresholdBtn.setText("Luu nguong"))
     
     def save_tier_prices(self):
-        """Save electricity tier prices"""
+        """Save electricity tier prices to Firebase"""
         # Get tier prices from inputs
         tier_prices = []
         for spin in self.ui.tierInputs:

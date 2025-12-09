@@ -74,8 +74,10 @@ class FirebaseHandler:
         self.device_states = {}
         self.power_data = {}
         self.on_device_change_callback = None
+        self.on_settings_change_callback = None
         self.stream = None
         self.power_stream = None
+        self.settings_stream = None
         self.stream_thread = None
         
         # Initialize device states from config
@@ -114,6 +116,9 @@ class FirebaseHandler:
             # Start listening for power value changes
             self._start_power_listener()
             
+            # Start listening for settings changes (thresholds, tier prices)
+            self._start_settings_listener()
+            
             return True
         except Exception as e:
             print(f"[ERROR] Firebase connection failed: {e}")
@@ -140,6 +145,12 @@ class FirebaseHandler:
             except:
                 pass
             self.power_stream = None
+        if self.settings_stream:
+            try:
+                self.settings_stream.close()
+            except:
+                pass
+            self.settings_stream = None
         self.connected = False
     
     def sync_device_states_from_firebase(self):
@@ -267,6 +278,52 @@ class FirebaseHandler:
             
         except Exception as e:
             print(f"[ERROR] Processing power change: {e}")
+    
+    def _start_settings_listener(self):
+        """Start listening for settings changes from Firebase (thresholds, tier prices)"""
+        if self.simulation_mode or not self.db:
+            return
+        
+        try:
+            def settings_stream_handler(message):
+                thread = threading.Thread(target=self._on_settings_change, args=(message,), daemon=True)
+                thread.start()
+            
+            def start_settings_stream():
+                try:
+                    self.settings_stream = self.db.child("power_management").child("settings").stream(settings_stream_handler)
+                    print("[FIREBASE] Listening for settings changes...")
+                except Exception as e:
+                    print(f"[ERROR] Settings stream failed: {e}")
+            
+            stream_thread = threading.Thread(target=start_settings_stream, daemon=True)
+            stream_thread.start()
+            
+        except Exception as e:
+            print(f"[ERROR] Failed to start settings listener: {e}")
+    
+    def _on_settings_change(self, message):
+        """Handle settings changes from Firebase"""
+        try:
+            if message["data"] is None:
+                return
+            
+            path = message["path"].strip('/')
+            data = message["data"]
+            event = message["event"]
+            
+            print(f"[FIREBASE] Settings changed: path='{path}', event={event}")
+            
+            # Notify callback if registered
+            if self.on_settings_change_callback:
+                self.on_settings_change_callback(path, data)
+            
+        except Exception as e:
+            print(f"[ERROR] Processing settings change: {e}")
+    
+    def set_settings_change_callback(self, callback):
+        """Set callback for settings changes from Firebase"""
+        self.on_settings_change_callback = callback
     
     def _on_control_change(self, message):
         """Handle control commands from Firebase"""
@@ -608,6 +665,12 @@ class FirebaseHandler:
             except:
                 pass
             self.power_stream = None
+        if self.settings_stream:
+            try:
+                self.settings_stream.close()
+            except:
+                pass
+            self.settings_stream = None
 
 
 
