@@ -844,7 +844,8 @@ class MainWindow(QMainWindow):
         
         for device in room['devices']:
             state = self.firebase.get_device_state(room['id'], device['id'])
-            power = device['power']
+            # Đọc power từ Firebase
+            power = self.firebase.get_device_power(room['id'], device['id'])
             pie_data.append((device['name'], power, state))
         
         self.pie_chart.set_data(room['name'], pie_data)
@@ -881,7 +882,8 @@ class MainWindow(QMainWindow):
             room_short = room['name'].replace("Phòng ", "P")
             for device in room['devices']:
                 state = self.firebase.get_device_state(room['id'], device['id'])
-                power = device['power'] if state else 0
+                # Đọc power từ Firebase thay vì config
+                power = self.firebase.get_device_power(room['id'], device['id']) if state else 0
                 
                 # Room column
                 room_item = QTableWidgetItem(room_short)
@@ -897,7 +899,7 @@ class MainWindow(QMainWindow):
                 self.ui.REPORTTB.setItem(row, 1, device_item)
                 
                 # Power column
-                power_item = QTableWidgetItem(str(power))
+                power_item = QTableWidgetItem(str(int(power)))
                 power_item.setForeground(QColor("#00d4ff") if power > 0 else QColor("#778da9"))
                 self.ui.REPORTTB.setItem(row, 2, power_item)
                 row += 1
@@ -933,13 +935,14 @@ class MainWindow(QMainWindow):
                     'power': room_power,
                     'devices': {}
                 }
-                # Add device states
+                # Add device states và đọc power từ Firebase
                 for device in room['devices']:
                     state = self.firebase.get_device_state(room['id'], device['id'])
+                    device_power = self.firebase.get_device_power(room['id'], device['id']) if state else 0
                     room_powers[f"room{room['id']}"]['devices'][f"device{device['id']}"] = {
                         'name': device['name'],
                         'state': state,
-                        'power': device['power'] if state else 0
+                        'power': device_power
                     }
             
             # Update power data

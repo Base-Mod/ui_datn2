@@ -257,21 +257,21 @@ class FirebaseHandler:
     
     def get_room_power(self, room_id: int) -> float:
         """Get total power for a room from Firebase"""
-        # Try to read from Firebase first
+        # Try to read total_power from Firebase
         if not self.simulation_mode and self.db:
             try:
-                data = self.db.child("power_management").child("rooms").child(f"room{room_id}").child("power").get().val()
+                data = self.db.child("power_management").child("rooms").child(f"room{room_id}").child("total_power").get().val()
                 if data is not None:
                     return float(data)
             except Exception as e:
                 print(f"[ERROR] Get room power: {e}")
         
-        # Fallback: calculate from device states
+        # Fallback: sum device powers
         total = 0.0
         if room_id in self.device_states:
             for device_id, device_data in self.device_states[room_id].items():
                 if device_data['state']:
-                    total += device_data['power']
+                    total += self.get_device_power(room_id, device_id)
         return total
     
     def get_active_power(self) -> float:
@@ -292,7 +292,7 @@ class FirebaseHandler:
         return total
     
     def get_device_power(self, room_id: int, device_id: int) -> float:
-        """Get power for a specific device from Firebase"""
+        """Get power for a specific device from Firebase (actual reading)"""
         if not self.simulation_mode and self.db:
             try:
                 data = self.db.child("power_management").child("rooms").child(f"room{room_id}").child("devices").child(f"device{device_id}").child("power").get().val()
@@ -301,10 +301,43 @@ class FirebaseHandler:
             except Exception as e:
                 print(f"[ERROR] Get device power: {e}")
         
-        # Fallback to config
+        # Fallback: return max_power if device is ON
         if room_id in self.device_states and device_id in self.device_states[room_id]:
-            return self.device_states[room_id][device_id]['power']
+            if self.device_states[room_id][device_id]['state']:
+                return self.device_states[room_id][device_id]['power']
         return 0.0
+    
+    def get_all_room_data(self, room_id: int) -> dict:
+        """Get all data for a room including device powers"""
+        result = {
+            'name': '',
+            'total_power': 0,
+            'devices': {}
+        }
+        
+        if not self.simulation_mode and self.db:
+            try:
+                data = self.db.child("power_management").child("rooms").child(f"room{room_id}").get().val()
+                if data:
+                    result['name'] = data.get('name', '')
+                    result['total_power'] = float(data.get('total_power', 0))
+                    if 'devices' in data:
+                        for dev_key, dev_data in data['devices'].items():
+                            result['devices'][dev_key] = {
+                                'name': dev_data.get('name', ''),
+                                'state': bool(dev_data.get('state', False)),
+                                'power': float(dev_data.get('power', 0)),
+                                'max_power': float(dev_data.get('max_power', 0))
+                            }
+                    return result
+            except Exception as e:
+                print(f"[ERROR] Get room data: {e}")
+        
+        # Fallback to local cache
+        if room_id in self.device_states:
+            for dev_id, dev_data in self.device_states[room_id].items():
+                result['devices'][f'device{dev_id}'] = dev_data
+        return result
     
     def disconnect(self):
         """Disconnect from Firebase"""

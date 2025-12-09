@@ -1,0 +1,133 @@
+{
+  "power_management": {
+    "rooms": {
+      "room1": {
+        "name": "Phòng 1",
+        "total_power": 0,
+        "devices": {
+          "device0": {
+            "name": "Đèn",
+            "state": false,
+            "power": 0,
+            "max_power": 15
+          },
+          "device1": {
+            "name": "Quạt",
+            "state": false,
+            "power": 0,
+            "max_power": 45
+          }
+        }
+      },
+      "room2": {
+        "name": "Phòng 2",
+        "total_power": 0,
+        "devices": {
+          "device0": {
+            "name": "Đèn",
+            "state": false,
+            "power": 0,
+            "max_power": 12
+          },
+          "device1": {
+            "name": "Điều hòa",
+            "state": false,
+            "power": 0,
+            "max_power": 850
+          }
+        }
+      },
+      "room3": {
+        "name": "Phòng 3",
+        "total_power": 0,
+        "devices": {
+          "device0": {
+            "name": "Đèn",
+            "state": false,
+            "power": 0,
+            "max_power": 18
+          },
+          "device1": {
+            "name": "Quạt",
+            "state": false,
+            "power": 0,
+            "max_power": 50
+          }
+        }
+      },
+      "room4": {
+        "name": "Phòng 4",
+        "total_power": 0,
+        "devices": {
+          "device0": {
+            "name": "Đèn",
+            "state": false,
+            "power": 0,
+            "max_power": 15
+          },
+          "device1": {
+            "name": "Điều hòa",
+            "state": false,
+            "power": 0,
+            "max_power": 900
+          }
+        }
+      }
+    },
+    "control": {
+      "room1": {
+        "device0": false,
+        "device1": false
+      },
+      "room2": {
+        "device0": false,
+        "device1": false
+      },
+      "room3": {
+        "device0": false,
+        "device1": false
+      },
+      "room4": {
+        "device0": false,
+        "device1": false
+      }
+    },
+    "total": {
+      "power": 0,
+      "energy_kwh": 0,
+      "monthly_cost": 0
+    },
+    "settings": {
+      "thresholds": {
+        "warning": 500,
+        "critical": 1000
+      },
+      "tier_prices": {
+        "tier1": 1893,
+        "tier2": 1956,
+        "tier3": 2271,
+        "tier4": 2860,
+        "tier5": 3197,
+        "tier6": 3302
+      },
+      "tier_limits": {
+        "tier1": 50,
+        "tier2": 100,
+        "tier3": 200,
+        "tier4": 300,
+        "tier5": 400
+      },
+      "vat": 8
+    },
+    "energy": {
+      "current": {
+        "today_kwh": 0,
+        "month_kwh": 0,
+        "today_cost": 0,
+        "month_cost": 0
+      },
+      "daily": {}
+    },
+    "alerts": {}
+  }
+}
