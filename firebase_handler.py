@@ -343,25 +343,34 @@ class FirebaseHandler:
     def update_power_data(self, room_powers: dict, total_power: float):
         """Update room power data to Firebase (async)"""
         if self.simulation_mode:
+            print(f"[SIM] Would update Firebase: Total={total_power}W")
             return True
         
         def update_firebase():
             try:
+                # Update each room
                 for room_key, room_data in room_powers.items():
-                    self.db.child("power_management").child("rooms").child(room_key).update({
+                    room_update = {
                         'name': room_data.get('name', ''),
                         'power': round(room_data.get('power', 0), 2)
-                    })
+                    }
+                    self.db.child("power_management").child("rooms").child(room_key).update(room_update)
+                    print(f"[FIREBASE] Updated {room_key}: {room_update['power']}W")
                     
+                    # Update devices
                     if 'devices' in room_data:
                         for device_key, device_data in room_data['devices'].items():
                             self.db.child("power_management").child("rooms").child(room_key).child("devices").child(device_key).update(device_data)
+                            print(f"[FIREBASE] Updated {room_key}/{device_key}: {device_data['power']}W")
                 
-                self.db.child("power_management").child("total").update({
-                    'power': round(total_power, 2)
-                })
+                # Update total
+                total_update = {'power': round(total_power, 2)}
+                self.db.child("power_management").child("total").update(total_update)
+                print(f"[FIREBASE] Updated TOTAL: {total_power}W")
             except Exception as e:
                 print(f"[ERROR] Firebase update power: {e}")
+                import traceback
+                traceback.print_exc()
         
         thread = threading.Thread(target=update_firebase, daemon=True)
         thread.start()
@@ -370,16 +379,21 @@ class FirebaseHandler:
     def update_energy_usage(self, energy_kwh: float, monthly_cost: float):
         """Update energy usage and cost to Firebase (async)"""
         if self.simulation_mode:
+            print(f"[SIM] Would update energy: {energy_kwh} kWh, {monthly_cost} VND")
             return True
         
         def update_firebase():
             try:
-                self.db.child("power_management").child("total").update({
+                energy_update = {
                     'energy': round(energy_kwh, 2),
                     'monthly_cost': round(monthly_cost, 0)
-                })
+                }
+                self.db.child("power_management").child("total").update(energy_update)
+                print(f"[FIREBASE] Updated energy: {energy_kwh} kWh, cost: {monthly_cost} VND")
             except Exception as e:
                 print(f"[ERROR] Firebase update energy: {e}")
+                import traceback
+                traceback.print_exc()
         
         thread = threading.Thread(target=update_firebase, daemon=True)
         thread.start()
