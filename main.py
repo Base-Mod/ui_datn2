@@ -509,8 +509,21 @@ class MainWindow(QMainWindow):
         
         # Load tier prices from Firebase
         tier_prices, vat = self.firebase.get_tier_prices()
-        if tier_prices and len(tier_prices) == 6:
-            self.calculator.update_tier_prices(tier_prices, vat / 100.0 if vat else 0.08)
+        print(f"[DEBUG] Tier prices from Firebase: {tier_prices}, VAT: {vat}")
+        if tier_prices and isinstance(tier_prices, list) and len(tier_prices) == 6:
+            # Validate all prices are numbers
+            valid = True
+            for price in tier_prices:
+                if not isinstance(price, (int, float)):
+                    print(f"[ERROR] Invalid price type: {price} ({type(price)})")
+                    valid = False
+                    break
+            if valid:
+                self.calculator.update_tier_prices(tier_prices, vat / 100.0 if vat else 0.08)
+            else:
+                print("[WARNING] Invalid tier prices from Firebase, using defaults")
+        else:
+            print("[WARNING] No valid tier prices from Firebase, using defaults")
         
         # Room navigation
         self.rooms = ROOMS

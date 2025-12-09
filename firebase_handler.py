@@ -432,9 +432,40 @@ class FirebaseHandler:
         try:
             data = self.db.child("power_management").child("settings").get().val()
             if data:
-                prices = data.get('tier_prices')
+                tier_prices_data = data.get('tier_prices')
                 vat = data.get('vat')
-                return prices, vat
+                
+                # Convert tier_prices from dict to list if needed
+                if isinstance(tier_prices_data, dict):
+                    # Firebase stores as {"tier1": 1678, "tier2": 1734, ...}
+                    # Convert to [1678, 1734, ...]
+                    prices = []
+                    for i in range(1, 7):  # tier1 to tier6
+                        tier_key = f"tier{i}"
+                        if tier_key in tier_prices_data:
+                            price = tier_prices_data[tier_key]
+                            # Ensure it's a number
+                            if isinstance(price, (int, float, str)):
+                                try:
+                                    prices.append(int(price))
+                                except ValueError:
+                                    prices.append(0)
+                            else:
+                                prices.append(0)
+                    if len(prices) == 6:
+                        return prices, vat
+                elif isinstance(tier_prices_data, list) and len(tier_prices_data) == 6:
+                    # Already a list, just validate
+                    prices = []
+                    for price in tier_prices_data:
+                        if isinstance(price, (int, float, str)):
+                            try:
+                                prices.append(int(price))
+                            except ValueError:
+                                prices.append(0)
+                        else:
+                            prices.append(0)
+                    return prices, vat
         except Exception as e:
             print(f"[ERROR] Firebase get tier prices: {e}")
         
