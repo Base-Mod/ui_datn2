@@ -67,8 +67,8 @@ QPushButton#pushButton, QPushButton#pushButton_4 {
     border: none;
     border-left: 3px solid transparent;
     border-radius: 0px;
-    padding: 12px 8px;
-    font-size: 9px;
+    padding: 15px 10px;
+    font-size: 10px;
     font-weight: bold;
     text-align: center;
     margin: 2px 0px;
@@ -114,7 +114,8 @@ QLabel {
 
 /* Exit Button */
 QPushButton#exit {
-    background-color: #e63946;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #ff6b6b, stop:1 #e63946);
     color: white;
     border: none;
     border-radius: 12px;
@@ -123,41 +124,59 @@ QPushButton#exit {
 }
 
 QPushButton#exit:hover {
-    background-color: #ff5a5f;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #ff8585, stop:1 #ff5a5f);
+}
+
+QPushButton#exit:pressed {
+    background: #c0392b;
 }
 
 /* Device Control Buttons - Toggle Style */
 QPushButton#pushButton_5, QPushButton#pushButton_6 {
-    background-color: #415a77;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #4a6fa5, stop:1 #415a77);
     color: #e0e1dd;
     border: 2px solid #778da9;
-    border-radius: 18px;
-    font-size: 10px;
+    border-radius: 20px;
+    font-size: 11px;
     font-weight: bold;
-    padding: 8px 20px;
-    min-width: 50px;
+    padding: 10px 25px;
+    min-width: 55px;
 }
 
 QPushButton#pushButton_5:hover, QPushButton#pushButton_6:hover {
-    background-color: #00d4ff;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #00e5ff, stop:1 #00d4ff);
     border-color: #00d4ff;
     color: #0d1b2a;
 }
 
+QPushButton#pushButton_5:pressed, QPushButton#pushButton_6:pressed {
+    background: #00b8d4;
+}
+
 /* PREV/NEXT Buttons */
 QPushButton#pushButton_7, QPushButton#pushButton_8 {
-    background-color: transparent;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #1b263b, stop:1 #0d1b2a);
     color: #00d4ff;
-    border: 1px solid #00d4ff;
-    border-radius: 4px;
-    font-size: 8px;
+    border: 2px solid #00d4ff;
+    border-radius: 6px;
+    font-size: 9px;
     font-weight: bold;
-    padding: 5px 10px;
+    padding: 6px 12px;
 }
 
 QPushButton#pushButton_7:hover, QPushButton#pushButton_8:hover {
-    background-color: #00d4ff;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #00e5ff, stop:1 #00d4ff);
     color: #0d1b2a;
+    border-color: #00e5ff;
+}
+
+QPushButton#pushButton_7:pressed, QPushButton#pushButton_8:pressed {
+    background: #00b8d4;
 }
 
 /* Table Widget */
@@ -362,11 +381,17 @@ class MainWindow(QMainWindow):
             if state:
                 self.ui.pushButton_5.setText("ON")
                 self.ui.pushButton_5.setStyleSheet(
-                    "background-color: #2ecc71; color: white; border: 2px solid #27ae60;")
+                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+                    "stop:0 #58d68d, stop:1 #2ecc71); "
+                    "color: white; border: 2px solid #27ae60; "
+                    "border-radius: 20px; font-size: 11px; font-weight: bold;")
             else:
                 self.ui.pushButton_5.setText("OFF")
                 self.ui.pushButton_5.setStyleSheet(
-                    "background-color: #e74c3c; color: white; border: 2px solid #c0392b;")
+                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+                    "stop:0 #ec7063, stop:1 #e74c3c); "
+                    "color: white; border: 2px solid #c0392b; "
+                    "border-radius: 20px; font-size: 11px; font-weight: bold;")
     
     def toggle_device2(self):
         room_id = self.current_room['id']
@@ -378,11 +403,17 @@ class MainWindow(QMainWindow):
             if state:
                 self.ui.pushButton_6.setText("ON")
                 self.ui.pushButton_6.setStyleSheet(
-                    "background-color: #2ecc71; color: white; border: 2px solid #27ae60;")
+                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+                    "stop:0 #58d68d, stop:1 #2ecc71); "
+                    "color: white; border: 2px solid #27ae60; "
+                    "border-radius: 20px; font-size: 11px; font-weight: bold;")
             else:
                 self.ui.pushButton_6.setText("OFF")
                 self.ui.pushButton_6.setStyleSheet(
-                    "background-color: #e74c3c; color: white; border: 2px solid #c0392b;")
+                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+                    "stop:0 #ec7063, stop:1 #e74c3c); "
+                    "color: white; border: 2px solid #c0392b; "
+                    "border-radius: 20px; font-size: 11px; font-weight: bold;")
     
     def prev_room(self):
         self.current_room_index = (self.current_room_index - 1) % len(self.rooms)
@@ -407,10 +438,16 @@ class MainWindow(QMainWindow):
             self.ui.pushButton_5.setText("ON" if state1 else "OFF")
             if state1:
                 self.ui.pushButton_5.setStyleSheet(
-                    "background-color: #2ecc71; color: white; border: 2px solid #27ae60;")
+                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+                    "stop:0 #58d68d, stop:1 #2ecc71); "
+                    "color: white; border: 2px solid #27ae60; "
+                    "border-radius: 20px; font-size: 11px; font-weight: bold;")
             else:
                 self.ui.pushButton_5.setStyleSheet(
-                    "background-color: #e74c3c; color: white; border: 2px solid #c0392b;")
+                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+                    "stop:0 #ec7063, stop:1 #e74c3c); "
+                    "color: white; border: 2px solid #c0392b; "
+                    "border-radius: 20px; font-size: 11px; font-weight: bold;")
         
         if len(devices) >= 2:
             self.ui.label_9.setText(devices[1]['name'])
@@ -418,10 +455,16 @@ class MainWindow(QMainWindow):
             self.ui.pushButton_6.setText("ON" if state2 else "OFF")
             if state2:
                 self.ui.pushButton_6.setStyleSheet(
-                    "background-color: #2ecc71; color: white; border: 2px solid #27ae60;")
+                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+                    "stop:0 #58d68d, stop:1 #2ecc71); "
+                    "color: white; border: 2px solid #27ae60; "
+                    "border-radius: 20px; font-size: 11px; font-weight: bold;")
             else:
                 self.ui.pushButton_6.setStyleSheet(
-                    "background-color: #e74c3c; color: white; border: 2px solid #c0392b;")
+                    "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+                    "stop:0 #ec7063, stop:1 #e74c3c); "
+                    "color: white; border: 2px solid #c0392b; "
+                    "border-radius: 20px; font-size: 11px; font-weight: bold;")
     
     def setup_report_table(self):
         # Setup table columns
