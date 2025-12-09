@@ -592,11 +592,11 @@ class Ui_MainWindow(object):
                 background-color: #1b263b;
             }
             QSpinBox::up-button, QSpinBox::down-button {
-                width: 18px;
+                width: 24px;
                 background-color: #2ecc71;
                 border: none;
-                border-radius: 3px;
-                margin: 2px;
+                border-radius: 4px;
+                margin: 1px;
             }
             QSpinBox::up-button:hover, QSpinBox::down-button:hover {
                 background-color: #27ae60;
@@ -612,17 +612,17 @@ class Ui_MainWindow(object):
         """
         
         for i in range(6):
-            y_pos = 48 + i * 28
+            y_pos = 48 + i * 30
             
             # Label
             lbl = QtWidgets.QLabel(self.page)
-            lbl.setGeometry(QtCore.QRect(8, y_pos, 90, 24))
+            lbl.setGeometry(QtCore.QRect(5, y_pos, 85, 26))
             lbl.setText(tier_labels[i])
             lbl.setStyleSheet("color: #e0e1dd; font-size: 10px; font-weight: bold;")
             
             # SpinBox
             spin = QtWidgets.QSpinBox(self.page)
-            spin.setGeometry(QtCore.QRect(100, y_pos, 90, 26))
+            spin.setGeometry(QtCore.QRect(90, y_pos, 100, 28))
             spin.setRange(500, 10000)
             spin.setValue(tier_defaults[i])
             spin.setStyleSheet(spinStyle)
@@ -632,12 +632,12 @@ class Ui_MainWindow(object):
         
         # VAT input
         self.vatLabel = QtWidgets.QLabel(self.page)
-        self.vatLabel.setGeometry(QtCore.QRect(8, 220, 90, 24))
+        self.vatLabel.setGeometry(QtCore.QRect(5, 230, 85, 26))
         self.vatLabel.setText("VAT (%):")
         self.vatLabel.setStyleSheet("color: #e0e1dd; font-size: 10px; font-weight: bold;")
         
         self.vatInput = QtWidgets.QSpinBox(self.page)
-        self.vatInput.setGeometry(QtCore.QRect(100, 220, 90, 26))
+        self.vatInput.setGeometry(QtCore.QRect(90, 230, 100, 28))
         self.vatInput.setRange(0, 20)
         self.vatInput.setValue(8)
         self.vatInput.setSuffix("%")
@@ -647,7 +647,7 @@ class Ui_MainWindow(object):
         
         # Save Tier button - Green style
         self.saveTierBtn = QtWidgets.QPushButton(self.page)
-        self.saveTierBtn.setGeometry(QtCore.QRect(45, 250, 110, 32))
+        self.saveTierBtn.setGeometry(QtCore.QRect(40, 262, 110, 32))
         self.saveTierBtn.setText("Lưu giá điện")
         self.saveTierBtn.setStyleSheet("""
             QPushButton {
@@ -708,11 +708,11 @@ class Ui_MainWindow(object):
                 background-color: #1b263b;
             }
             QSpinBox::up-button, QSpinBox::down-button {
-                width: 18px;
+                width: 24px;
                 background-color: #f39c12;
                 border: none;
-                border-radius: 3px;
-                margin: 2px;
+                border-radius: 4px;
+                margin: 1px;
             }
             QSpinBox::up-button:hover, QSpinBox::down-button:hover {
                 background-color: #d68910;
@@ -720,7 +720,7 @@ class Ui_MainWindow(object):
         """
         
         self.warningThresholdInput = QtWidgets.QSpinBox(self.page)
-        self.warningThresholdInput.setGeometry(QtCore.QRect(300, 66, 90, 26))
+        self.warningThresholdInput.setGeometry(QtCore.QRect(300, 66, 95, 28))
         self.warningThresholdInput.setRange(100, 5000)
         self.warningThresholdInput.setValue(500)
         self.warningThresholdInput.setStyleSheet(warningSpinStyle)
@@ -747,11 +747,11 @@ class Ui_MainWindow(object):
                 background-color: #1b263b;
             }
             QSpinBox::up-button, QSpinBox::down-button {
-                width: 18px;
+                width: 24px;
                 background-color: #e74c3c;
                 border: none;
-                border-radius: 3px;
-                margin: 2px;
+                border-radius: 4px;
+                margin: 1px;
             }
             QSpinBox::up-button:hover, QSpinBox::down-button:hover {
                 background-color: #c0392b;
@@ -759,7 +759,7 @@ class Ui_MainWindow(object):
         """
         
         self.criticalThresholdInput = QtWidgets.QSpinBox(self.page)
-        self.criticalThresholdInput.setGeometry(QtCore.QRect(300, 92, 90, 26))
+        self.criticalThresholdInput.setGeometry(QtCore.QRect(300, 92, 95, 28))
         self.criticalThresholdInput.setRange(200, 10000)
         self.criticalThresholdInput.setValue(1000)
         self.criticalThresholdInput.setStyleSheet(criticalSpinStyle)
@@ -791,11 +791,11 @@ class Ui_MainWindow(object):
                 background-color: #1b263b;
             }
             QSpinBox::up-button, QSpinBox::down-button {
-                width: 18px;
+                width: 24px;
                 background-color: #00d4ff;
                 border: none;
-                border-radius: 3px;
-                margin: 2px;
+                border-radius: 4px;
+                margin: 1px;
             }
             QSpinBox::up-button:hover, QSpinBox::down-button:hover {
                 background-color: #0099cc;
@@ -803,17 +803,17 @@ class Ui_MainWindow(object):
         """
         
         for i in range(4):
-            y_pos = 138 + i * 28
+            y_pos = 138 + i * 30
             
             # Label
             lbl = QtWidgets.QLabel(self.page)
-            lbl.setGeometry(QtCore.QRect(210, y_pos, 70, 24))
+            lbl.setGeometry(QtCore.QRect(210, y_pos, 70, 26))
             lbl.setText(room_names[i])
             lbl.setStyleSheet("color: #00d4ff; font-size: 10px; font-weight: bold;")
             
             # SpinBox
             spin = QtWidgets.QSpinBox(self.page)
-            spin.setGeometry(QtCore.QRect(285, y_pos, 90, 26))
+            spin.setGeometry(QtCore.QRect(285, y_pos, 95, 28))
             spin.setRange(50, 2000)
             spin.setValue(200)
             spin.setStyleSheet(roomSpinStyle)
@@ -823,7 +823,7 @@ class Ui_MainWindow(object):
         
         # Save Threshold button - Orange style
         self.saveThresholdBtn = QtWidgets.QPushButton(self.page)
-        self.saveThresholdBtn.setGeometry(QtCore.QRect(250, 250, 110, 32))
+        self.saveThresholdBtn.setGeometry(QtCore.QRect(250, 262, 110, 32))
         self.saveThresholdBtn.setText("Lưu ngưỡng")
         self.saveThresholdBtn.setStyleSheet("""
             QPushButton {
