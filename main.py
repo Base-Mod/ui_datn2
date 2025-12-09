@@ -4,7 +4,7 @@ import subprocess
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidgetItem, 
                                QHeaderView, QMessageBox, QWidget)
 from PyQt5.QtCore import Qt, QTimer, QDateTime, QRect
-from PyQt5.QtGui import QColor, QFont, QPainter, QBrush, QPen, QLinearGradient
+from PyQt5.QtGui import QColor, QFont, QPainter, QBrush, QPen, QLinearGradient, QCursor
 from gui_pi import Ui_MainWindow
 from config import ROOMS, POWER_THRESHOLDS
 from modbus_handler import ModbusHandler
@@ -484,6 +484,10 @@ class MainWindow(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.showFullScreen()  # True fullscreen mode
         
+        # Hide mouse cursor for touch screen
+        self.setCursor(QCursor(Qt.BlankCursor))
+        QApplication.setOverrideCursor(QCursor(Qt.BlankCursor))
+        
         # Initialize Modbus handler
         self.modbus = ModbusHandler()
         self.modbus.connect()
@@ -886,6 +890,8 @@ class MainWindow(QMainWindow):
         self.modbus.disconnect()
         # Restore taskbar on Pi
         show_taskbar()
+        # Restore mouse cursor
+        QApplication.restoreOverrideCursor()
         event.accept()
 
 
