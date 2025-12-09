@@ -181,7 +181,21 @@ class FirebaseHandler:
             data = message["data"]
             event = message["event"]
             
-            print(f"[FIREBASE] Stream event: {event}, path: {path}, data: {data}")
+            print(f"[FIREBASE] Stream event: {event}, path: '{path}', data: {data}")
+            
+            # Handle initial full data load (path is empty, data is full dict)
+            if path == "" and isinstance(data, dict):
+                print("[FIREBASE] Initial data load from stream")
+                for room_key, devices in data.items():
+                    if isinstance(devices, dict):
+                        room_id = int(room_key.replace('room', ''))
+                        for device_key, state in devices.items():
+                            device_id = int(device_key.replace('device', ''))
+                            if isinstance(state, bool):
+                                # Only update local cache, don't trigger callback on initial load
+                                if room_id in self.device_states and device_id in self.device_states[room_id]:
+                                    self.device_states[room_id][device_id]['state'] = state
+                return
             
             # Parse path: room1/device0
             if '/' in path:
@@ -201,6 +215,10 @@ class FirebaseHandler:
                     device_id = int(device_key.replace('device', ''))
                     if isinstance(state, bool):
                         self._handle_remote_control(room_id, device_id, state)
+            elif path and isinstance(data, bool):
+                # Single device update with path like "room1/device0" but parsed as single part
+                # This handles edge case
+                pass
         except Exception as e:
             print(f"[ERROR] Processing control event: {e}")
     
