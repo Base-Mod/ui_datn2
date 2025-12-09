@@ -302,10 +302,10 @@ class Ui_MainWindow(object):
             QPushButton {
                 background-color: #1b4965;
                 color: #00d4ff;
-                border: 1px solid #00d4ff;
-                border-radius: 6px;
+                border: none;
+                border-radius: 8px;
                 font-weight: bold;
-                font-size: 11px;
+                font-size: 12px;
                 outline: none;
             }
             QPushButton:hover {
@@ -318,19 +318,19 @@ class Ui_MainWindow(object):
             }
             QPushButton:focus {
                 outline: none;
-                border: 1px solid #00d4ff;
+                border: none;
             }
         """
         
         self.pushButton_7 = QtWidgets.QPushButton(self.CONTROL)
-        self.pushButton_7.setGeometry(QtCore.QRect(65, 40, 50, 28))
+        self.pushButton_7.setGeometry(QtCore.QRect(60, 40, 55, 30))
         self.pushButton_7.setStyleSheet(navButtonStyle)
         self.pushButton_7.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.pushButton_7.setFocusPolicy(QtCore.Qt.NoFocus)
         self.pushButton_7.setObjectName("pushButton_7")
         
         self.pushButton_8 = QtWidgets.QPushButton(self.CONTROL)
-        self.pushButton_8.setGeometry(QtCore.QRect(290, 40, 50, 28))
+        self.pushButton_8.setGeometry(QtCore.QRect(290, 40, 55, 30))
         self.pushButton_8.setStyleSheet(navButtonStyle)
         self.pushButton_8.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.pushButton_8.setFocusPolicy(QtCore.Qt.NoFocus)
