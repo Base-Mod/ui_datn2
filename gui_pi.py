@@ -334,6 +334,71 @@ class Ui_MainWindow(object):
             }
         """
         
+        # SpinBox style for device power inputs
+        spinStyle = """
+            QSpinBox {
+                background-color: #1b263b;
+                color: #e0e1dd;
+                border: 1px solid #415a77;
+                border-radius: 5px;
+                padding: 2px;
+                font-size: 10px;
+                selection-background-color: #00d4ff;
+                selection-color: #0d1b2a;
+            }
+            QSpinBox::up-button {
+                background-color: #415a77;
+                border: none;
+                border-radius: 3px;
+                width: 16px;
+                height: 12px;
+                subcontrol-origin: margin;
+                subcontrol-position: top right;
+                margin-top: 1px;
+                margin-bottom: 1px;
+                margin-right: 1px;
+            }
+            QSpinBox::up-arrow {
+                image: none;
+                width: 0;
+                height: 0;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-bottom: 4px solid #e0e1dd;
+            }
+            QSpinBox::up-button:hover {
+                background-color: #00d4ff;
+            }
+            QSpinBox::up-arrow:hover {
+                border-bottom-color: #0d1b2a;
+            }
+            QSpinBox::down-button {
+                background-color: #415a77;
+                border: none;
+                border-radius: 3px;
+                width: 16px;
+                height: 12px;
+                subcontrol-origin: margin;
+                subcontrol-position: bottom right;
+                margin-top: 1px;
+                margin-bottom: 1px;
+                margin-right: 1px;
+            }
+            QSpinBox::down-arrow {
+                image: none;
+                width: 0;
+                height: 0;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 4px solid #e0e1dd;
+            }
+            QSpinBox::down-button:hover {
+                background-color: #00d4ff;
+            }
+            QSpinBox::down-arrow:hover {
+                border-top-color: #0d1b2a;
+            }
+        """        
         self.pushButton_7 = QtWidgets.QPushButton(self.CONTROL)
         self.pushButton_7.setGeometry(QtCore.QRect(60, 40, 55, 30))
         self.pushButton_7.setStyleSheet(navButtonStyle)
