@@ -1,12 +1,40 @@
 import sys
+import os
+import subprocess
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidgetItem, 
                                QHeaderView, QMessageBox)
-from PyQt5.QtCore import Qt, QTimer, QDateTime
+from PyQt5.QtCore import Qt, QTimer, QDateTime, QRect
 from PyQt5.QtGui import QColor, QFont
 from gui_pi import Ui_MainWindow
 from config import ROOMS
 from modbus_handler import ModbusHandler
 from electricity_calc import ElectricityCalculator, UsageTracker
+
+
+def hide_taskbar():
+    """Hide taskbar on Raspberry Pi (LXDE/LXPanel)"""
+    if sys.platform == 'linux':
+        try:
+            # Hide LXPanel (Raspberry Pi OS taskbar)
+            subprocess.run(['lxpanelctl', 'exit'], check=False, capture_output=True)
+        except:
+            pass
+        try:
+            # Alternative: hide using xdotool
+            subprocess.run(['xdotool', 'search', '--name', 'lxpanel', 'windowunmap'], 
+                          check=False, capture_output=True)
+        except:
+            pass
+
+def show_taskbar():
+    """Show taskbar on Raspberry Pi"""
+    if sys.platform == 'linux':
+        try:
+            # Restart LXPanel
+            subprocess.Popen(['lxpanel', '--profile', 'LXDE-pi'], 
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except:
+            pass
 
 
 # Professional Dark Theme Stylesheet for Power Management System (3.5" Pi Screen)
@@ -16,7 +44,16 @@ QMainWindow {
     background-color: #1a1a2e;
 }
 
+QWidget {
+    background-color: #1a1a2e;
+    color: #eee;
+}
+
 QWidget#centralwidget {
+    background-color: #1a1a2e;
+}
+
+QWidget#verticalLayoutWidget {
     background-color: #1a1a2e;
 }
 
@@ -52,6 +89,10 @@ QStackedWidget {
     border-radius: 10px;
 }
 
+QStackedWidget > QWidget {
+    background-color: #16213e;
+}
+
 QWidget#HOME, QWidget#CONTROL, QWidget#REPORT, QWidget#page {
     background-color: #16213e;
     border-radius: 10px;
@@ -59,6 +100,7 @@ QWidget#HOME, QWidget#CONTROL, QWidget#REPORT, QWidget#page {
 
 /* Labels */
 QLabel {
+    background-color: transparent;
     color: #eee;
 }
 
@@ -91,8 +133,8 @@ QPushButton#pushButton_5:hover, QPushButton#pushButton_6:hover {
     background-color: #e94560;
 }
 
-/* Next Button */
-QPushButton#pushButton_7 {
+/* PREV/NEXT Buttons */
+QPushButton#pushButton_7, QPushButton#pushButton_8 {
     background-color: #0f3460;
     color: #eee;
     border: 1px solid #e94560;
@@ -101,7 +143,7 @@ QPushButton#pushButton_7 {
     font-weight: bold;
 }
 
-QPushButton#pushButton_7:hover {
+QPushButton#pushButton_7:hover, QPushButton#pushButton_8:hover {
     background-color: #e94560;
 }
 
@@ -131,6 +173,10 @@ QHeaderView::section {
     border: none;
     font-weight: bold;
     font-size: 8px;
+}
+
+QTableCornerButton::section {
+    background-color: #0f3460;
 }
 
 /* Menu Bar - Hidden for small screen */
@@ -172,13 +218,16 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         
+        # Hide taskbar on Pi
+        hide_taskbar()
+        
         # Apply professional stylesheet
         self.setStyleSheet(STYLESHEET)
         
-        # Set window properties for 3.5" Pi screen
+        # Set window properties for 3.5" Pi screen - TRUE FULLSCREEN
         self.setWindowTitle("Power Management System")
-        self.setFixedSize(480, 320)
-        self.setWindowFlags(Qt.FramelessWindowHint)  # Fullscreen borderless for Pi
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.showFullScreen()  # True fullscreen mode
         
         # Initialize Modbus handler
         self.modbus = ModbusHandler()
@@ -220,6 +269,34 @@ class MainWindow(QMainWindow):
         self.update_room_display()
         self.ui.stackedWidget.setCurrentWidget(self.ui.HOME)
         self.update_nav_buttons()
+        
+        # Scale UI after show
+        QTimer.singleShot(100, self.scale_ui)
+    
+    def scale_ui(self):
+        """Scale UI elements to fit screen"""
+        screen = self.geometry()
+        w = screen.width()
+        h = screen.height()
+        
+        # Calculate scale factors (design was 480x320)
+        scale_x = w / 480
+        scale_y = h / 320
+        
+        # Scale sidebar
+        sidebar_w = int(70 * scale_x)
+        self.ui.verticalLayoutWidget.setGeometry(QRect(0, 0, sidebar_w, int(290 * scale_y)))
+        
+        # Scale stacked widget (main content area)
+        content_x = sidebar_w + 5
+        content_w = w - content_x - 5
+        content_h = h - 30  # Leave space for status bar
+        self.ui.stackedWidget.setGeometry(QRect(content_x, 0, content_w, content_h))
+    
+    def resizeEvent(self, event):
+        """Handle window resize"""
+        super().resizeEvent(event)
+        self.scale_ui()
     
     def show_home(self):
         self.ui.stackedWidget.setCurrentWidget(self.ui.HOME)
@@ -376,6 +453,8 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         """Clean up on close"""
         self.modbus.disconnect()
+        # Restore taskbar on Pi
+        show_taskbar()
         event.accept()
 
 

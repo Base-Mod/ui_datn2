@@ -15,11 +15,18 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(480, 320)
+        
+        # Set auto fill background
+        MainWindow.setAutoFillBackground(True)
+        
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+        self.centralwidget.setAutoFillBackground(True)
+        
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 70, 290))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
+        self.verticalLayoutWidget.setAutoFillBackground(True)
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -42,6 +49,7 @@ class Ui_MainWindow(object):
         self.stackedWidget.setObjectName("stackedWidget")
         self.HOME = QtWidgets.QWidget()
         self.HOME.setObjectName("HOME")
+        self.HOME.setAutoFillBackground(True)
         self.label = QtWidgets.QLabel(self.HOME)
         self.label.setGeometry(QtCore.QRect(20, 5, 360, 30))
         font = QtGui.QFont()
@@ -105,6 +113,7 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.HOME)
         self.CONTROL = QtWidgets.QWidget()
         self.CONTROL.setObjectName("CONTROL")
+        self.CONTROL.setAutoFillBackground(True)
         self.name_ctl = QtWidgets.QLabel(self.CONTROL)
         self.name_ctl.setGeometry(QtCore.QRect(60, 5, 200, 30))
         font = QtGui.QFont()
@@ -158,6 +167,7 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.CONTROL)
         self.REPORT = QtWidgets.QWidget()
         self.REPORT.setObjectName("REPORT")
+        self.REPORT.setAutoFillBackground(True)
         self.TITLERP = QtWidgets.QLabel(self.REPORT)
         self.TITLERP.setGeometry(QtCore.QRect(60, 5, 200, 30))
         font = QtGui.QFont()
@@ -176,6 +186,7 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.REPORT)
         self.page = QtWidgets.QWidget()
         self.page.setObjectName("page")
+        self.page.setAutoFillBackground(True)
         self.name_ctl_4 = QtWidgets.QLabel(self.page)
         self.name_ctl_4.setGeometry(QtCore.QRect(60, 5, 200, 30))
         font = QtGui.QFont()
