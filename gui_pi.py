@@ -23,25 +23,70 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName("centralwidget")
         self.centralwidget.setAutoFillBackground(True)
         
+        # Sidebar container
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 70, 290))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 75, 290))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
-        self.verticalLayoutWidget.setAutoFillBackground(True)
+        self.verticalLayoutWidget.setStyleSheet("""
+            QWidget {
+                background-color: #0d1b2a;
+                border-right: 2px solid #1b4965;
+            }
+        """)
+        
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout.setContentsMargins(5, 10, 5, 10)
+        self.verticalLayout.setSpacing(8)
         self.verticalLayout.setObjectName("verticalLayout")
+        
+        # Style for menu buttons
+        menuButtonStyle = """
+            QPushButton {
+                background-color: transparent;
+                color: #778da9;
+                border: none;
+                border-left: 3px solid transparent;
+                padding: 12px 5px;
+                font-size: 9px;
+                font-weight: bold;
+                text-align: center;
+            }
+            QPushButton:hover {
+                background-color: #1b263b;
+                color: #00d4ff;
+                border-left: 3px solid #00d4ff;
+            }
+            QPushButton:pressed, QPushButton:checked {
+                background-color: #1b4965;
+                color: #00d4ff;
+                border-left: 3px solid #00d4ff;
+            }
+        """
+        
         self.pushButton_2 = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.pushButton_2.setObjectName("pushButton_2")
+        self.pushButton_2.setStyleSheet(menuButtonStyle)
+        self.pushButton_2.setMinimumHeight(50)
         self.verticalLayout.addWidget(self.pushButton_2)
+        
         self.pushButton_3 = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.pushButton_3.setObjectName("pushButton_3")
+        self.pushButton_3.setStyleSheet(menuButtonStyle)
+        self.pushButton_3.setMinimumHeight(50)
         self.verticalLayout.addWidget(self.pushButton_3)
+        
         self.pushButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.pushButton.setObjectName("pushButton")
+        self.pushButton.setStyleSheet(menuButtonStyle)
+        self.pushButton.setMinimumHeight(50)
         self.verticalLayout.addWidget(self.pushButton)
+        
         self.pushButton_4 = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.pushButton_4.setObjectName("pushButton_4")
+        self.pushButton_4.setStyleSheet(menuButtonStyle)
+        self.pushButton_4.setMinimumHeight(50)
         self.verticalLayout.addWidget(self.pushButton_4)
+        
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
         self.stackedWidget = QtWidgets.QStackedWidget(self.centralwidget)
