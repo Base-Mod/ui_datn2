@@ -334,71 +334,6 @@ class Ui_MainWindow(object):
             }
         """
         
-        # SpinBox style for device power inputs
-        spinStyle = """
-            QSpinBox {
-                background-color: #1b263b;
-                color: #e0e1dd;
-                border: 1px solid #415a77;
-                border-radius: 5px;
-                padding: 2px;
-                font-size: 10px;
-                selection-background-color: #00d4ff;
-                selection-color: #0d1b2a;
-            }
-            QSpinBox::up-button {
-                background-color: #415a77;
-                border: none;
-                border-radius: 3px;
-                width: 16px;
-                height: 12px;
-                subcontrol-origin: margin;
-                subcontrol-position: top right;
-                margin-top: 1px;
-                margin-bottom: 1px;
-                margin-right: 1px;
-            }
-            QSpinBox::up-arrow {
-                image: none;
-                width: 0;
-                height: 0;
-                border-left: 4px solid transparent;
-                border-right: 4px solid transparent;
-                border-bottom: 4px solid #e0e1dd;
-            }
-            QSpinBox::up-button:hover {
-                background-color: #00d4ff;
-            }
-            QSpinBox::up-arrow:hover {
-                border-bottom-color: #0d1b2a;
-            }
-            QSpinBox::down-button {
-                background-color: #415a77;
-                border: none;
-                border-radius: 3px;
-                width: 16px;
-                height: 12px;
-                subcontrol-origin: margin;
-                subcontrol-position: bottom right;
-                margin-top: 1px;
-                margin-bottom: 1px;
-                margin-right: 1px;
-            }
-            QSpinBox::down-arrow {
-                image: none;
-                width: 0;
-                height: 0;
-                border-left: 4px solid transparent;
-                border-right: 4px solid transparent;
-                border-top: 4px solid #e0e1dd;
-            }
-            QSpinBox::down-button:hover {
-                background-color: #00d4ff;
-            }
-            QSpinBox::down-arrow:hover {
-                border-top-color: #0d1b2a;
-            }
-        """        
         self.pushButton_7 = QtWidgets.QPushButton(self.CONTROL)
         self.pushButton_7.setGeometry(QtCore.QRect(60, 40, 55, 30))
         self.pushButton_7.setStyleSheet(navButtonStyle)
@@ -426,27 +361,13 @@ class Ui_MainWindow(object):
         """)
         
         self.label_8 = QtWidgets.QLabel(self.device1Card)
-        self.label_8.setGeometry(QtCore.QRect(15, 5, 150, 25))
+        self.label_8.setGeometry(QtCore.QRect(15, 15, 150, 30))
         font = QtGui.QFont()
         font.setPointSize(11)
         font.setBold(True)
         self.label_8.setFont(font)
         self.label_8.setStyleSheet("color: #e0e1dd; background: transparent; border: none;")
         self.label_8.setObjectName("label_8")
-        
-        # Device 1 power input
-        self.device1PowerLabel = QtWidgets.QLabel(self.device1Card)
-        self.device1PowerLabel.setGeometry(QtCore.QRect(15, 30, 40, 20))
-        self.device1PowerLabel.setText("Công suất:")
-        self.device1PowerLabel.setStyleSheet("color: #778da9; font-size: 9px; background: transparent; border: none;")
-        
-        self.device1PowerInput = QtWidgets.QSpinBox(self.device1Card)
-        self.device1PowerInput.setGeometry(QtCore.QRect(60, 28, 70, 24))
-        self.device1PowerInput.setMinimum(0)
-        self.device1PowerInput.setMaximum(5000)
-        self.device1PowerInput.setValue(0)
-        self.device1PowerInput.setSuffix(" W")
-        self.device1PowerInput.setStyleSheet(spinStyle)
         
         # Toggle button style for devices
         toggleOnStyle = """
@@ -472,7 +393,7 @@ class Ui_MainWindow(object):
         """
         
         self.pushButton_5 = QtWidgets.QPushButton(self.device1Card)
-        self.pushButton_5.setGeometry(QtCore.QRect(15, 55, 100, 32))
+        self.pushButton_5.setGeometry(QtCore.QRect(15, 50, 100, 32))
         self.pushButton_5.setStyleSheet(toggleOnStyle)
         self.pushButton_5.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.pushButton_5.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -480,7 +401,7 @@ class Ui_MainWindow(object):
         
         # Device 1 status indicator
         self.device1Status = QtWidgets.QLabel(self.device1Card)
-        self.device1Status.setGeometry(QtCore.QRect(120, 57, 50, 28))
+        self.device1Status.setGeometry(QtCore.QRect(120, 52, 50, 28))
         self.device1Status.setText("ON")
         self.device1Status.setStyleSheet("color: #2ecc71; font-size: 12px; font-weight: bold; background: transparent; border: none;")
         self.device1Status.setAlignment(QtCore.Qt.AlignCenter)
@@ -498,7 +419,7 @@ class Ui_MainWindow(object):
         """)
         
         self.label_9 = QtWidgets.QLabel(self.device2Card)
-        self.label_9.setGeometry(QtCore.QRect(15, 5, 150, 25))
+        self.label_9.setGeometry(QtCore.QRect(15, 15, 150, 30))
         font = QtGui.QFont()
         font.setPointSize(11)
         font.setBold(True)
@@ -506,22 +427,8 @@ class Ui_MainWindow(object):
         self.label_9.setStyleSheet("color: #e0e1dd; background: transparent; border: none;")
         self.label_9.setObjectName("label_9")
         
-        # Device 2 power input
-        self.device2PowerLabel = QtWidgets.QLabel(self.device2Card)
-        self.device2PowerLabel.setGeometry(QtCore.QRect(15, 30, 40, 20))
-        self.device2PowerLabel.setText("Công suất:")
-        self.device2PowerLabel.setStyleSheet("color: #778da9; font-size: 9px; background: transparent; border: none;")
-        
-        self.device2PowerInput = QtWidgets.QSpinBox(self.device2Card)
-        self.device2PowerInput.setGeometry(QtCore.QRect(60, 28, 70, 24))
-        self.device2PowerInput.setMinimum(0)
-        self.device2PowerInput.setMaximum(5000)
-        self.device2PowerInput.setValue(0)
-        self.device2PowerInput.setSuffix(" W")
-        self.device2PowerInput.setStyleSheet(spinStyle)
-        
         self.pushButton_6 = QtWidgets.QPushButton(self.device2Card)
-        self.pushButton_6.setGeometry(QtCore.QRect(15, 55, 100, 32))
+        self.pushButton_6.setGeometry(QtCore.QRect(15, 50, 100, 32))
         self.pushButton_6.setStyleSheet(toggleOnStyle)
         self.pushButton_6.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.pushButton_6.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -529,7 +436,7 @@ class Ui_MainWindow(object):
         
         # Device 2 status indicator
         self.device2Status = QtWidgets.QLabel(self.device2Card)
-        self.device2Status.setGeometry(QtCore.QRect(120, 57, 50, 28))
+        self.device2Status.setGeometry(QtCore.QRect(120, 52, 50, 28))
         self.device2Status.setText("ON")
         self.device2Status.setStyleSheet("color: #2ecc71; font-size: 12px; font-weight: bold; background: transparent; border: none;")
         self.device2Status.setAlignment(QtCore.Qt.AlignCenter)
