@@ -547,7 +547,10 @@ class MainWindow(QMainWindow):
         # Setup status bar with time
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_status)
-        self.timer.start(1000)
+        self.timer.start(2000)  # Update every 2 seconds instead of 1 second
+        
+        # Separate timer for Firebase sync (every 5 seconds)
+        self.sync_counter = 0
         
         # Sync device states from Firebase at startup
         self.sync_devices_from_firebase()
@@ -654,16 +657,21 @@ class MainWindow(QMainWindow):
         """
         Handle device state change from Firebase (remote control from app/web)
         This is called when someone controls device via Firebase
+        Must update UI in main thread using QMetaObject.invokeMethod
         """
         print(f"[UI] Firebase remote control: Room {room_id}, Device {device_id} -> {'ON' if state else 'OFF'}")
         
-        # Update UI if this is the current room being displayed
-        if room_id == self.current_room['id']:
-            devices = self.current_room['devices']
-            if device_id == devices[0]['id']:
-                self.update_device1_ui(state)
-            elif len(devices) > 1 and device_id == devices[1]['id']:
-                self.update_device2_ui(state)
+        # Schedule UI update on main thread
+        def update_ui():
+            if room_id == self.current_room['id']:
+                devices = self.current_room['devices']
+                if device_id == devices[0]['id']:
+                    self.update_device1_ui(state)
+                elif len(devices) > 1 and device_id == devices[1]['id']:
+                    self.update_device2_ui(state)
+        
+        # Call update on main thread
+        QTimer.singleShot(0, update_ui)
     
     def prev_room(self):
         self.current_room_index = (self.current_room_index - 1) % len(self.rooms)
@@ -907,13 +915,16 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(
             f" {current_time} | P: {total_power:.0f}W | ~{monthly_cost:.0f}k VNĐ/tháng")
         
-        # Update report table and chart periodically
+        # Update report table and chart every 2 seconds
         self.update_report_table()
         self.update_power_chart()
         self.update_pie_chart()
         
-        # Sync to Firebase every 5 seconds
-        self.sync_to_firebase(total_power, monthly_cost * 1000)
+        # Sync to Firebase only every 5 calls (10 seconds total)
+        self.sync_counter += 1
+        if self.sync_counter >= 5:
+            self.sync_counter = 0
+            self.sync_to_firebase(total_power, monthly_cost * 1000)
     
     def sync_to_firebase(self, total_power, monthly_cost):
         """Sync power data to Firebase"""
@@ -931,7 +942,7 @@ class MainWindow(QMainWindow):
                 for device in room['devices']:
                     state = self.firebase.get_device_state(room['id'], device['id'])
                     device_power = self.firebase.get_device_power(room['id'], device['id']) if state else 0
-                    room_powers[f"room{room['id']}"]['devices'][f"device{device['id']}"] = {
+                    room_powers[f"room{room['id']}"][' devices'][f"device{device['id']}"] = {
                         'name': device['name'],
                         'state': state,
                         'power': device_power

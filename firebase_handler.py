@@ -162,12 +162,24 @@ class FirebaseHandler:
             return
         
         try:
-            # Start stream in background thread
+            # Start stream in background thread to prevent blocking UI
             def stream_handler(message):
-                self._on_control_change(message)
+                # Handle in background thread
+                thread = threading.Thread(target=self._on_control_change, args=(message,), daemon=True)
+                thread.start()
             
-            self.stream = self.db.child("power_management").child("control").stream(stream_handler)
-            print("[FIREBASE] Listening for control commands...")
+            # Start stream
+            def start_stream():
+                try:
+                    self.stream = self.db.child("power_management").child("control").stream(stream_handler)
+                    print("[FIREBASE] Listening for control commands...")
+                except Exception as e:
+                    print(f"[ERROR] Stream failed: {e}")
+            
+            # Run stream in background thread
+            stream_thread = threading.Thread(target=start_stream, daemon=True)
+            stream_thread.start()
+            
         except Exception as e:
             print(f"[ERROR] Failed to start control listener: {e}")
     
