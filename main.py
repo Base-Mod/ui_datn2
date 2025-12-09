@@ -55,16 +55,16 @@ class PowerChart(QWidget):
         # Draw title inside
         painter.setPen(QPen(QColor("#778da9")))
         painter.setFont(QFont("Arial", 7))
-        painter.drawText(0, 2, w, 14, Qt.AlignCenter, "CÔNG SUẤT (W)")
+        painter.drawText(0, 3, w, 14, Qt.AlignCenter, "CÔNG SUẤT (W)")
         
         if not self.data:
             return
         
         # Chart area
         margin_top = 18
-        margin_bottom = 22
-        margin_left = 5
-        margin_right = 5
+        margin_bottom = 20
+        margin_left = 8
+        margin_right = 8
         
         chart_w = w - margin_left - margin_right
         chart_h = h - margin_top - margin_bottom
@@ -161,30 +161,29 @@ class PieChart(QWidget):
         
         # Draw room name
         painter.setPen(QPen(QColor("#00d4ff")))
-        painter.setFont(QFont("Arial", 8, QFont.Bold))
-        title = self.room_name if self.room_name else "Chi tiết phòng"
-        painter.drawText(0, 2, w, 14, Qt.AlignCenter, title)
+        painter.setFont(QFont("Arial", 7, QFont.Bold))
+        title = self.room_name if self.room_name else "Chi tiết"
+        painter.drawText(0, 3, w, 12, Qt.AlignCenter, title)
         
         if not self.data:
             painter.setPen(QPen(QColor("#778da9")))
-            painter.setFont(QFont("Arial", 8))
-            painter.drawText(0, 18, w, h-18, Qt.AlignCenter, "Nhấp phòng\ntrên biểu đồ")
+            painter.setFont(QFont("Arial", 7))
+            painter.drawText(0, 16, w, h-16, Qt.AlignCenter, "Nhấp phòng\ntrên chart")
             return
         
         # Calculate total
         total = sum(p for _, p, on in self.data if on)
         if total == 0:
             painter.setPen(QPen(QColor("#778da9")))
-            painter.setFont(QFont("Arial", 8))
-            painter.drawText(0, 18, w, 35, Qt.AlignCenter, "Tất cả OFF")
-            # Still draw legend
-            self.draw_legend(painter, w, 55)
+            painter.setFont(QFont("Arial", 7))
+            painter.drawText(0, 16, w, 30, Qt.AlignCenter, "Tất cả OFF")
+            self.draw_legend(painter, w, 50)
             return
         
         # Pie chart dimensions
-        pie_size = 60
+        pie_size = min(w - 10, 65)
         pie_x = (w - pie_size) // 2
-        pie_y = 18
+        pie_y = 16
         
         # Draw pie slices
         start_angle = 90 * 16  # Start from top
@@ -202,26 +201,26 @@ class PieChart(QWidget):
             start_angle += span_angle
         
         # Draw legend
-        self.draw_legend(painter, w, pie_y + pie_size + 5)
+        self.draw_legend(painter, w, pie_y + pie_size + 4)
     
     def draw_legend(self, painter, w, start_y):
         """Draw device legend"""
-        legend_x = 8
-        painter.setFont(QFont("Arial", 7))
+        legend_x = 5
+        painter.setFont(QFont("Arial", 6))
         
         for i, (name, power, is_on) in enumerate(self.data):
-            y = start_y + i * 12
+            y = start_y + i * 11
             color = self.colors[i % len(self.colors)] if is_on else QColor("#555")
             
             # Color box
             painter.setBrush(QBrush(color))
             painter.setPen(Qt.NoPen)
-            painter.drawRect(legend_x, y, 8, 8)
+            painter.drawRect(legend_x, y, 7, 7)
             
             # Text
             painter.setPen(QPen(QColor("#e0e1dd") if is_on else QColor("#666")))
             status = f"{power}W" if is_on else "OFF"
-            painter.drawText(legend_x + 11, y - 1, w - 20, 11, 
+            painter.drawText(legend_x + 9, y - 1, w - 15, 10, 
                            Qt.AlignLeft | Qt.AlignVCenter, f"{name}:{status}")
 
 
