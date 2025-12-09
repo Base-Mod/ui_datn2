@@ -497,6 +497,10 @@ class MainWindow(QMainWindow):
         self.firebase = get_firebase()
         self.firebase_sync_enabled = self.firebase.is_connected()
         
+        # Set callback for remote control from Firebase (app/web)
+        if self.firebase_sync_enabled:
+            self.firebase.set_device_change_callback(self.on_firebase_device_change)
+        
         # Initialize electricity calculator
         self.calculator = ElectricityCalculator()
         self.tracker = UsageTracker()
@@ -505,6 +509,11 @@ class MainWindow(QMainWindow):
         if self.firebase_sync_enabled:
             fb_thresholds = self.firebase.get_thresholds()
             self.power_thresholds = fb_thresholds
+            
+            # Load tier prices from Firebase
+            tier_prices, vat = self.firebase.get_tier_prices()
+            if tier_prices and len(tier_prices) == 6:
+                self.calculator.update_tier_prices(tier_prices, vat / 100.0 if vat else 0.08)
         else:
             self.power_thresholds = POWER_THRESHOLDS.copy()
         
@@ -630,6 +639,25 @@ class MainWindow(QMainWindow):
             # Sync to Firebase
             if self.firebase_sync_enabled:
                 self.firebase.set_device_state(room_id, device['id'], state)
+    
+    def on_firebase_device_change(self, room_id: int, device_id: int, state: bool):
+        """
+        Handle device state change from Firebase (remote control from app/web)
+        This is called when someone controls device via Firebase
+        """
+        print(f"[UI] Firebase remote control: Room {room_id}, Device {device_id} -> {'ON' if state else 'OFF'}")
+        
+        # Update Modbus (actual hardware)
+        success = self.modbus.write_coil(room_id, device_id, state)
+        
+        if success:
+            # Update UI if this is the current room being displayed
+            if room_id == self.current_room['id']:
+                devices = self.current_room['devices']
+                if device_id == devices[0]['id']:
+                    self.update_device1_ui(state)
+                elif len(devices) > 1 and device_id == devices[1]['id']:
+                    self.update_device2_ui(state)
     
     def prev_room(self):
         self.current_room_index = (self.current_room_index - 1) % len(self.rooms)
@@ -764,8 +792,8 @@ class MainWindow(QMainWindow):
             self.firebase.set_thresholds(self.warning_threshold, self.critical_threshold)
         
         # Visual feedback
-        self.ui.saveThresholdBtn.setText("✓ Đã lưu")
-        QTimer.singleShot(1500, lambda: self.ui.saveThresholdBtn.setText("Lưu ngưỡng"))
+        self.ui.saveThresholdBtn.setText("Da luu")
+        QTimer.singleShot(1500, lambda: self.ui.saveThresholdBtn.setText("Luu nguong"))
     
     def save_tier_prices(self):
         """Save electricity tier prices"""
@@ -778,12 +806,15 @@ class MainWindow(QMainWindow):
         vat = self.ui.vatInput.value() / 100.0
         
         # Update the calculator with new prices
-        # Note: In a real app, you'd save this to config/database
         self.calculator.update_tier_prices(tier_prices, vat)
         
+        # Sync to Firebase
+        if self.firebase_sync_enabled:
+            self.firebase.set_tier_prices(tier_prices, self.ui.vatInput.value())
+        
         # Visual feedback
-        self.ui.saveTierBtn.setText("✓ Đã lưu")
-        QTimer.singleShot(1500, lambda: self.ui.saveTierBtn.setText("Lưu giá điện"))
+        self.ui.saveTierBtn.setText("Da luu")
+        QTimer.singleShot(1500, lambda: self.ui.saveTierBtn.setText("Luu gia dien"))
     
     def on_room_selected(self, room_index):
         """Handle room selection from bar chart"""
