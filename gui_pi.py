@@ -577,27 +577,37 @@ class Ui_MainWindow(object):
         
         spinStyle = """
             QSpinBox {
-                background-color: #1b263b;
+                background-color: #0d1b2a;
                 color: #2ecc71;
-                border: 1px solid #2ecc71;
-                border-radius: 4px;
-                font-size: 10px;
-                padding: 2px;
+                border: none;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: bold;
+                padding: 4px 8px;
             }
             QSpinBox:hover {
-                border: 1px solid #58d68d;
-                background-color: #243447;
+                background-color: #1b263b;
             }
             QSpinBox:focus {
-                border: 2px solid #2ecc71;
+                background-color: #1b263b;
             }
             QSpinBox::up-button, QSpinBox::down-button {
-                width: 16px;
+                width: 18px;
                 background-color: #2ecc71;
-                border-radius: 2px;
+                border: none;
+                border-radius: 3px;
+                margin: 2px;
             }
             QSpinBox::up-button:hover, QSpinBox::down-button:hover {
-                background-color: #58d68d;
+                background-color: #27ae60;
+            }
+            QSpinBox::up-arrow {
+                image: none;
+                width: 0;
+            }
+            QSpinBox::down-arrow {
+                image: none;
+                width: 0;
             }
         """
         
@@ -606,44 +616,46 @@ class Ui_MainWindow(object):
             
             # Label
             lbl = QtWidgets.QLabel(self.page)
-            lbl.setGeometry(QtCore.QRect(10, y_pos, 95, 24))
+            lbl.setGeometry(QtCore.QRect(8, y_pos, 90, 24))
             lbl.setText(tier_labels[i])
-            lbl.setStyleSheet("color: #778da9; font-size: 10px;")
+            lbl.setStyleSheet("color: #e0e1dd; font-size: 10px; font-weight: bold;")
             
             # SpinBox
             spin = QtWidgets.QSpinBox(self.page)
-            spin.setGeometry(QtCore.QRect(105, y_pos, 80, 22))
+            spin.setGeometry(QtCore.QRect(100, y_pos, 90, 26))
             spin.setRange(500, 10000)
             spin.setValue(tier_defaults[i])
             spin.setStyleSheet(spinStyle)
+            spin.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
             spin.setObjectName(f"tierInput_{i+1}")
             self.tierInputs.append(spin)
         
         # VAT input
         self.vatLabel = QtWidgets.QLabel(self.page)
-        self.vatLabel.setGeometry(QtCore.QRect(10, 220, 95, 24))
+        self.vatLabel.setGeometry(QtCore.QRect(8, 220, 90, 24))
         self.vatLabel.setText("VAT (%):")
-        self.vatLabel.setStyleSheet("color: #778da9; font-size: 10px;")
+        self.vatLabel.setStyleSheet("color: #e0e1dd; font-size: 10px; font-weight: bold;")
         
         self.vatInput = QtWidgets.QSpinBox(self.page)
-        self.vatInput.setGeometry(QtCore.QRect(105, 220, 80, 22))
+        self.vatInput.setGeometry(QtCore.QRect(100, 220, 90, 26))
         self.vatInput.setRange(0, 20)
         self.vatInput.setValue(8)
         self.vatInput.setSuffix("%")
         self.vatInput.setStyleSheet(spinStyle)
+        self.vatInput.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
         self.vatInput.setObjectName("vatInput")
         
         # Save Tier button - Green style
         self.saveTierBtn = QtWidgets.QPushButton(self.page)
-        self.saveTierBtn.setGeometry(QtCore.QRect(55, 248, 100, 28))
+        self.saveTierBtn.setGeometry(QtCore.QRect(45, 250, 110, 32))
         self.saveTierBtn.setText("Lưu giá điện")
         self.saveTierBtn.setStyleSheet("""
             QPushButton {
                 background-color: #2ecc71;
                 color: white;
                 border: none;
-                border-radius: 6px;
-                font-size: 10px;
+                border-radius: 8px;
+                font-size: 11px;
                 font-weight: bold;
                 outline: none;
             }
@@ -655,6 +667,7 @@ class Ui_MainWindow(object):
             }
             QPushButton:focus {
                 outline: none;
+                border: none;
             }
         """)
         self.saveTierBtn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -677,68 +690,80 @@ class Ui_MainWindow(object):
         
         # Warning threshold
         self.warningThresholdLabel = QtWidgets.QLabel(self.page)
-        self.warningThresholdLabel.setGeometry(QtCore.QRect(210, 68, 85, 22))
+        self.warningThresholdLabel.setGeometry(QtCore.QRect(210, 68, 85, 24))
         self.warningThresholdLabel.setText("Cảnh báo:")
-        self.warningThresholdLabel.setStyleSheet("color: #f39c12; font-size: 10px;")
+        self.warningThresholdLabel.setStyleSheet("color: #f39c12; font-size: 10px; font-weight: bold;")
         
         warningSpinStyle = """
             QSpinBox {
-                background-color: #1b263b;
+                background-color: #0d1b2a;
                 color: #f39c12;
-                border: 1px solid #f39c12;
-                border-radius: 4px;
-                font-size: 10px;
-                padding: 2px;
+                border: none;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: bold;
+                padding: 4px 8px;
             }
             QSpinBox:hover {
-                border: 1px solid #f7b731;
-                background-color: #243447;
+                background-color: #1b263b;
             }
             QSpinBox::up-button, QSpinBox::down-button {
-                width: 14px;
+                width: 18px;
                 background-color: #f39c12;
-                border-radius: 2px;
+                border: none;
+                border-radius: 3px;
+                margin: 2px;
+            }
+            QSpinBox::up-button:hover, QSpinBox::down-button:hover {
+                background-color: #d68910;
             }
         """
         
         self.warningThresholdInput = QtWidgets.QSpinBox(self.page)
-        self.warningThresholdInput.setGeometry(QtCore.QRect(300, 66, 75, 22))
+        self.warningThresholdInput.setGeometry(QtCore.QRect(300, 66, 90, 26))
         self.warningThresholdInput.setRange(100, 5000)
         self.warningThresholdInput.setValue(500)
         self.warningThresholdInput.setStyleSheet(warningSpinStyle)
+        self.warningThresholdInput.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
         self.warningThresholdInput.setObjectName("warningThresholdInput")
         
         # Critical threshold
         self.criticalThresholdLabel = QtWidgets.QLabel(self.page)
-        self.criticalThresholdLabel.setGeometry(QtCore.QRect(210, 92, 85, 22))
+        self.criticalThresholdLabel.setGeometry(QtCore.QRect(210, 94, 85, 24))
         self.criticalThresholdLabel.setText("Nguy hiểm:")
-        self.criticalThresholdLabel.setStyleSheet("color: #e74c3c; font-size: 10px;")
+        self.criticalThresholdLabel.setStyleSheet("color: #e74c3c; font-size: 10px; font-weight: bold;")
         
         criticalSpinStyle = """
             QSpinBox {
-                background-color: #1b263b;
+                background-color: #0d1b2a;
                 color: #e74c3c;
-                border: 1px solid #e74c3c;
-                border-radius: 4px;
-                font-size: 10px;
-                padding: 2px;
+                border: none;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: bold;
+                padding: 4px 8px;
             }
             QSpinBox:hover {
-                border: 1px solid #ec7063;
-                background-color: #243447;
+                background-color: #1b263b;
             }
             QSpinBox::up-button, QSpinBox::down-button {
-                width: 14px;
+                width: 18px;
                 background-color: #e74c3c;
-                border-radius: 2px;
+                border: none;
+                border-radius: 3px;
+                margin: 2px;
+            }
+            QSpinBox::up-button:hover, QSpinBox::down-button:hover {
+                background-color: #c0392b;
             }
         """
         
         self.criticalThresholdInput = QtWidgets.QSpinBox(self.page)
-        self.criticalThresholdInput.setGeometry(QtCore.QRect(300, 90, 75, 22))
+        self.criticalThresholdInput.setGeometry(QtCore.QRect(300, 92, 90, 26))
         self.criticalThresholdInput.setRange(200, 10000)
         self.criticalThresholdInput.setValue(1000)
         self.criticalThresholdInput.setStyleSheet(criticalSpinStyle)
+        self.criticalThresholdInput.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
         self.criticalThresholdInput.setObjectName("criticalThresholdInput")
         
         # Room thresholds section
@@ -754,53 +779,59 @@ class Ui_MainWindow(object):
         
         roomSpinStyle = """
             QSpinBox {
-                background-color: #1b263b;
+                background-color: #0d1b2a;
                 color: #00d4ff;
-                border: 1px solid #00d4ff;
-                border-radius: 4px;
-                font-size: 10px;
-                padding: 2px;
+                border: none;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: bold;
+                padding: 4px 8px;
             }
             QSpinBox:hover {
-                border: 1px solid #5dade2;
-                background-color: #243447;
+                background-color: #1b263b;
             }
             QSpinBox::up-button, QSpinBox::down-button {
-                width: 14px;
+                width: 18px;
                 background-color: #00d4ff;
-                border-radius: 2px;
+                border: none;
+                border-radius: 3px;
+                margin: 2px;
+            }
+            QSpinBox::up-button:hover, QSpinBox::down-button:hover {
+                background-color: #0099cc;
             }
         """
         
         for i in range(4):
-            y_pos = 138 + i * 26
+            y_pos = 138 + i * 28
             
             # Label
             lbl = QtWidgets.QLabel(self.page)
-            lbl.setGeometry(QtCore.QRect(210, y_pos, 70, 22))
+            lbl.setGeometry(QtCore.QRect(210, y_pos, 70, 24))
             lbl.setText(room_names[i])
-            lbl.setStyleSheet("color: #00d4ff; font-size: 10px;")
+            lbl.setStyleSheet("color: #00d4ff; font-size: 10px; font-weight: bold;")
             
             # SpinBox
             spin = QtWidgets.QSpinBox(self.page)
-            spin.setGeometry(QtCore.QRect(280, y_pos, 75, 20))
+            spin.setGeometry(QtCore.QRect(285, y_pos, 90, 26))
             spin.setRange(50, 2000)
             spin.setValue(200)
             spin.setStyleSheet(roomSpinStyle)
+            spin.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
             spin.setObjectName(f"roomThreshold_{i+1}")
             self.roomThresholdInputs.append(spin)
         
         # Save Threshold button - Orange style
         self.saveThresholdBtn = QtWidgets.QPushButton(self.page)
-        self.saveThresholdBtn.setGeometry(QtCore.QRect(255, 248, 100, 28))
+        self.saveThresholdBtn.setGeometry(QtCore.QRect(250, 250, 110, 32))
         self.saveThresholdBtn.setText("Lưu ngưỡng")
         self.saveThresholdBtn.setStyleSheet("""
             QPushButton {
                 background-color: #f39c12;
                 color: white;
                 border: none;
-                border-radius: 6px;
-                font-size: 10px;
+                border-radius: 8px;
+                font-size: 11px;
                 font-weight: bold;
                 outline: none;
             }
@@ -812,6 +843,7 @@ class Ui_MainWindow(object):
             }
             QPushButton:focus {
                 outline: none;
+                border: none;
             }
         """)
         self.saveThresholdBtn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
