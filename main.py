@@ -41,173 +41,196 @@ def show_taskbar():
 STYLESHEET = """
 /* Main Window */
 QMainWindow {
-    background-color: #1a1a2e;
+    background-color: #0d1b2a;
 }
 
 QWidget {
-    background-color: #1a1a2e;
-    color: #eee;
+    background-color: #0d1b2a;
+    color: #e0e1dd;
 }
 
 QWidget#centralwidget {
-    background-color: #1a1a2e;
+    background-color: #0d1b2a;
 }
 
 QWidget#verticalLayoutWidget {
-    background-color: #1a1a2e;
+    background-color: #1b263b;
+    border-radius: 8px;
+    margin: 5px;
 }
 
 /* Sidebar Navigation Buttons */
 QPushButton#pushButton_2, QPushButton#pushButton_3, 
 QPushButton#pushButton, QPushButton#pushButton_4 {
-    background-color: #16213e;
-    color: #eee;
+    background-color: #1b263b;
+    color: #778da9;
     border: none;
-    border-radius: 5px;
-    padding: 8px;
-    font-size: 8px;
+    border-left: 3px solid transparent;
+    border-radius: 0px;
+    padding: 12px 8px;
+    font-size: 9px;
     font-weight: bold;
     text-align: center;
-    margin: 2px 3px;
+    margin: 2px 0px;
 }
 
 QPushButton#pushButton_2:hover, QPushButton#pushButton_3:hover,
 QPushButton#pushButton:hover, QPushButton#pushButton_4:hover {
-    background-color: #0f3460;
+    background-color: #415a77;
+    color: #e0e1dd;
+    border-left: 3px solid #00d4ff;
 }
 
 QPushButton#pushButton_2:checked, QPushButton#pushButton_3:checked,
 QPushButton#pushButton:checked, QPushButton#pushButton_4:checked,
 QPushButton#pushButton_2:pressed, QPushButton#pushButton_3:pressed,
 QPushButton#pushButton:pressed, QPushButton#pushButton_4:pressed {
-    background-color: #e94560;
+    background-color: #415a77;
+    color: #00d4ff;
+    border-left: 3px solid #00d4ff;
 }
 
 /* Stacked Widget Pages */
 QStackedWidget {
-    background-color: #16213e;
-    border-radius: 10px;
+    background-color: #1b263b;
+    border-radius: 12px;
+    border: 1px solid #415a77;
 }
 
 QStackedWidget > QWidget {
-    background-color: #16213e;
+    background-color: #1b263b;
 }
 
 QWidget#HOME, QWidget#CONTROL, QWidget#REPORT, QWidget#page {
-    background-color: #16213e;
-    border-radius: 10px;
+    background-color: #1b263b;
+    border-radius: 12px;
 }
 
 /* Labels */
 QLabel {
     background-color: transparent;
-    color: #eee;
+    color: #e0e1dd;
 }
 
 /* Exit Button */
 QPushButton#exit {
-    background-color: #e94560;
+    background-color: #e63946;
     color: white;
     border: none;
     border-radius: 12px;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: bold;
 }
 
 QPushButton#exit:hover {
-    background-color: #ff6b6b;
+    background-color: #ff5a5f;
 }
 
-/* Device Control Buttons */
+/* Device Control Buttons - Toggle Style */
 QPushButton#pushButton_5, QPushButton#pushButton_6 {
-    background-color: #0f3460;
-    color: #eee;
-    border: 2px solid #e94560;
-    border-radius: 15px;
+    background-color: #415a77;
+    color: #e0e1dd;
+    border: 2px solid #778da9;
+    border-radius: 18px;
     font-size: 10px;
     font-weight: bold;
-    padding: 5px 15px;
+    padding: 8px 20px;
+    min-width: 50px;
 }
 
 QPushButton#pushButton_5:hover, QPushButton#pushButton_6:hover {
-    background-color: #e94560;
+    background-color: #00d4ff;
+    border-color: #00d4ff;
+    color: #0d1b2a;
 }
 
 /* PREV/NEXT Buttons */
 QPushButton#pushButton_7, QPushButton#pushButton_8 {
-    background-color: #0f3460;
-    color: #eee;
-    border: 1px solid #e94560;
+    background-color: transparent;
+    color: #00d4ff;
+    border: 1px solid #00d4ff;
     border-radius: 4px;
     font-size: 8px;
     font-weight: bold;
+    padding: 5px 10px;
 }
 
 QPushButton#pushButton_7:hover, QPushButton#pushButton_8:hover {
-    background-color: #e94560;
+    background-color: #00d4ff;
+    color: #0d1b2a;
 }
 
 /* Table Widget */
 QTableWidget {
-    background-color: #1a1a2e;
-    color: #eee;
-    border: 1px solid #0f3460;
-    border-radius: 5px;
-    gridline-color: #0f3460;
+    background-color: #0d1b2a;
+    color: #e0e1dd;
+    border: 1px solid #415a77;
+    border-radius: 8px;
+    gridline-color: #1b263b;
     font-size: 9px;
+    selection-background-color: #00d4ff;
+    selection-color: #0d1b2a;
 }
 
 QTableWidget::item {
-    padding: 4px;
-    border-bottom: 1px solid #0f3460;
+    padding: 6px;
+    border-bottom: 1px solid #1b263b;
 }
 
 QTableWidget::item:selected {
-    background-color: #e94560;
+    background-color: #00d4ff;
+    color: #0d1b2a;
 }
 
 QHeaderView::section {
-    background-color: #0f3460;
-    color: #eee;
-    padding: 5px;
+    background-color: #415a77;
+    color: #e0e1dd;
+    padding: 6px;
     border: none;
     font-weight: bold;
     font-size: 8px;
 }
 
 QTableCornerButton::section {
-    background-color: #0f3460;
+    background-color: #415a77;
 }
 
 /* Menu Bar - Hidden for small screen */
 QMenuBar {
-    background-color: #1a1a2e;
-    color: #eee;
+    background-color: #0d1b2a;
+    color: #e0e1dd;
     max-height: 0px;
 }
 
 /* Status Bar */
 QStatusBar {
-    background-color: #1a1a2e;
-    color: #00d9ff;
-    font-size: 8px;
-    max-height: 18px;
+    background-color: #1b263b;
+    color: #00d4ff;
+    font-size: 9px;
+    font-weight: bold;
+    border-top: 1px solid #415a77;
+    padding: 2px 10px;
 }
 
 /* Scrollbar */
 QScrollBar:vertical {
-    background-color: #1a1a2e;
+    background-color: #0d1b2a;
     width: 8px;
     border-radius: 4px;
 }
 
 QScrollBar::handle:vertical {
-    background-color: #0f3460;
+    background-color: #415a77;
     border-radius: 4px;
+    min-height: 20px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background-color: #e94560;
+    background-color: #00d4ff;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
 }
 """
 
@@ -323,7 +346,9 @@ class MainWindow(QMainWindow):
         
         for btn, page in zip(buttons, pages):
             if current == page:
-                btn.setStyleSheet("background-color: #e94560; color: white;")
+                btn.setStyleSheet(
+                    "background-color: #415a77; color: #00d4ff; "
+                    "border-left: 3px solid #00d4ff;")
             else:
                 btn.setStyleSheet("")
     
@@ -337,11 +362,11 @@ class MainWindow(QMainWindow):
             if state:
                 self.ui.pushButton_5.setText("ON")
                 self.ui.pushButton_5.setStyleSheet(
-                    "background-color: #00c853; color: white; border: 2px solid #00c853;")
+                    "background-color: #2ecc71; color: white; border: 2px solid #27ae60;")
             else:
                 self.ui.pushButton_5.setText("OFF")
                 self.ui.pushButton_5.setStyleSheet(
-                    "background-color: #e94560; color: white; border: 2px solid #e94560;")
+                    "background-color: #e74c3c; color: white; border: 2px solid #c0392b;")
     
     def toggle_device2(self):
         room_id = self.current_room['id']
@@ -353,11 +378,11 @@ class MainWindow(QMainWindow):
             if state:
                 self.ui.pushButton_6.setText("ON")
                 self.ui.pushButton_6.setStyleSheet(
-                    "background-color: #00c853; color: white; border: 2px solid #00c853;")
+                    "background-color: #2ecc71; color: white; border: 2px solid #27ae60;")
             else:
                 self.ui.pushButton_6.setText("OFF")
                 self.ui.pushButton_6.setStyleSheet(
-                    "background-color: #e94560; color: white; border: 2px solid #e94560;")
+                    "background-color: #e74c3c; color: white; border: 2px solid #c0392b;")
     
     def prev_room(self):
         self.current_room_index = (self.current_room_index - 1) % len(self.rooms)
@@ -382,9 +407,10 @@ class MainWindow(QMainWindow):
             self.ui.pushButton_5.setText("ON" if state1 else "OFF")
             if state1:
                 self.ui.pushButton_5.setStyleSheet(
-                    "background-color: #00c853; color: white; border: 2px solid #00c853;")
+                    "background-color: #2ecc71; color: white; border: 2px solid #27ae60;")
             else:
-                self.ui.pushButton_5.setStyleSheet("")
+                self.ui.pushButton_5.setStyleSheet(
+                    "background-color: #e74c3c; color: white; border: 2px solid #c0392b;")
         
         if len(devices) >= 2:
             self.ui.label_9.setText(devices[1]['name'])
@@ -392,9 +418,10 @@ class MainWindow(QMainWindow):
             self.ui.pushButton_6.setText("ON" if state2 else "OFF")
             if state2:
                 self.ui.pushButton_6.setStyleSheet(
-                    "background-color: #00c853; color: white; border: 2px solid #00c853;")
+                    "background-color: #2ecc71; color: white; border: 2px solid #27ae60;")
             else:
-                self.ui.pushButton_6.setStyleSheet("")
+                self.ui.pushButton_6.setStyleSheet(
+                    "background-color: #e74c3c; color: white; border: 2px solid #c0392b;")
     
     def setup_report_table(self):
         # Setup table columns
@@ -428,9 +455,9 @@ class MainWindow(QMainWindow):
                 
                 status_item = QTableWidgetItem("ON" if state else "OFF")
                 if state:
-                    status_item.setForeground(QColor("#00c853"))
+                    status_item.setForeground(QColor("#2ecc71"))
                 else:
-                    status_item.setForeground(QColor("#e94560"))
+                    status_item.setForeground(QColor("#e74c3c"))
                 self.ui.REPORTTB.setItem(row, 2, status_item)
                 
                 self.ui.REPORTTB.setItem(row, 3, QTableWidgetItem(str(power)))
