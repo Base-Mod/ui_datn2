@@ -2,13 +2,92 @@ import sys
 import os
 import subprocess
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidgetItem, 
-                               QHeaderView, QMessageBox)
+                               QHeaderView, QMessageBox, QWidget)
 from PyQt5.QtCore import Qt, QTimer, QDateTime, QRect
-from PyQt5.QtGui import QColor, QFont
+from PyQt5.QtGui import QColor, QFont, QPainter, QBrush, QPen, QLinearGradient
 from gui_pi import Ui_MainWindow
 from config import ROOMS
 from modbus_handler import ModbusHandler
 from electricity_calc import ElectricityCalculator, UsageTracker
+
+
+class PowerChart(QWidget):
+    """Custom bar chart widget for power consumption"""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.data = []  # [(room_name, power), ...]
+        self.colors = [
+            QColor("#00d4ff"),  # Cyan
+            QColor("#2ecc71"),  # Green
+            QColor("#f39c12"),  # Orange
+            QColor("#e74c3c"),  # Red
+        ]
+        self.setAutoFillBackground(True)
+    
+    def set_data(self, data):
+        """Set chart data: [(room_name, power), ...]"""
+        self.data = data
+        self.update()
+    
+    def paintEvent(self, event):
+        if not self.data:
+            return
+        
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        # Chart area
+        margin_top = 20
+        margin_bottom = 25
+        margin_left = 5
+        margin_right = 5
+        
+        w = self.width() - margin_left - margin_right
+        h = self.height() - margin_top - margin_bottom
+        
+        if len(self.data) == 0 or h <= 0:
+            return
+        
+        # Find max value
+        max_val = max(p for _, p in self.data) if self.data else 1
+        if max_val == 0:
+            max_val = 1
+        
+        bar_width = w // len(self.data) - 8
+        bar_spacing = (w - bar_width * len(self.data)) // (len(self.data) + 1)
+        
+        for i, (name, power) in enumerate(self.data):
+            # Calculate bar height
+            bar_height = int((power / max_val) * h * 0.85)
+            if bar_height < 2:
+                bar_height = 2
+            
+            x = margin_left + bar_spacing + i * (bar_width + bar_spacing)
+            y = margin_top + h - bar_height
+            
+            # Create gradient
+            gradient = QLinearGradient(x, y, x, y + bar_height)
+            color = self.colors[i % len(self.colors)]
+            gradient.setColorAt(0, color.lighter(120))
+            gradient.setColorAt(1, color)
+            
+            # Draw bar
+            painter.setBrush(QBrush(gradient))
+            painter.setPen(Qt.NoPen)
+            painter.drawRoundedRect(x, y, bar_width, bar_height, 3, 3)
+            
+            # Draw value on top
+            painter.setPen(QPen(QColor("#e0e1dd")))
+            painter.setFont(QFont("Arial", 7, QFont.Bold))
+            value_text = f"{int(power)}"
+            painter.drawText(x, y - 3, bar_width, 12, Qt.AlignCenter, value_text)
+            
+            # Draw room label below
+            painter.setPen(QPen(QColor("#778da9")))
+            painter.setFont(QFont("Arial", 7))
+            painter.drawText(x - 5, margin_top + h + 3, bar_width + 10, 15, 
+                           Qt.AlignCenter, name.replace("Phòng ", "P"))
 
 
 def hide_taskbar():
@@ -302,6 +381,9 @@ class MainWindow(QMainWindow):
         # Setup report table
         self.setup_report_table()
         
+        # Setup power chart
+        self.setup_power_chart()
+        
         # Setup status bar with time
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_status)
@@ -467,19 +549,40 @@ class MainWindow(QMainWindow):
                     "border-radius: 20px; font-size: 11px; font-weight: bold;")
     
     def setup_report_table(self):
-        # Setup table columns
-        self.ui.REPORTTB.setColumnCount(4)
+        # Setup table columns - smaller for chart layout
+        self.ui.REPORTTB.setColumnCount(3)
         self.ui.REPORTTB.setHorizontalHeaderLabels(
-            ["Phòng", "Thiết bị", "Trạng thái", "P (W)"])
+            ["Phòng", "TB", "P(W)"])
         
         # Set column widths
         header = self.ui.REPORTTB.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
         header.setSectionResizeMode(1, QHeaderView.Stretch)
         header.setSectionResizeMode(2, QHeaderView.Stretch)
-        header.setSectionResizeMode(3, QHeaderView.Stretch)
         
         self.update_report_table()
+    
+    def setup_power_chart(self):
+        """Setup the power chart widget"""
+        # Replace the placeholder widget with our custom chart
+        self.power_chart = PowerChart(self.ui.chartWidget)
+        self.power_chart.setGeometry(0, 0, 
+                                     self.ui.chartWidget.width(), 
+                                     self.ui.chartWidget.height())
+        self.update_power_chart()
+    
+    def update_power_chart(self):
+        """Update power chart with current room power data"""
+        chart_data = []
+        total_power = 0
+        
+        for room in self.rooms:
+            room_power = self.modbus.get_room_power(room['id'])
+            chart_data.append((room['name'], room_power))
+            total_power += room_power
+        
+        self.power_chart.set_data(chart_data)
+        self.ui.totalPowerLabel.setText(f"Tổng: {int(total_power)} W")
     
     def update_report_table(self):
         """Update report table with current device states"""
@@ -493,17 +596,23 @@ class MainWindow(QMainWindow):
                 state = self.modbus.get_device_state(room['id'], device['id'])
                 power = device['power'] if state else 0
                 
-                self.ui.REPORTTB.setItem(row, 0, QTableWidgetItem(room['name']))
-                self.ui.REPORTTB.setItem(row, 1, QTableWidgetItem(device['name']))
+                # Shortened room name
+                room_short = room['name'].replace("Phòng ", "P")
+                self.ui.REPORTTB.setItem(row, 0, QTableWidgetItem(room_short))
                 
-                status_item = QTableWidgetItem("ON" if state else "OFF")
+                # Device with status color
+                device_item = QTableWidgetItem(device['name'])
                 if state:
-                    status_item.setForeground(QColor("#2ecc71"))
+                    device_item.setForeground(QColor("#2ecc71"))
                 else:
-                    status_item.setForeground(QColor("#e74c3c"))
-                self.ui.REPORTTB.setItem(row, 2, status_item)
+                    device_item.setForeground(QColor("#778da9"))
+                self.ui.REPORTTB.setItem(row, 1, device_item)
                 
-                self.ui.REPORTTB.setItem(row, 3, QTableWidgetItem(str(power)))
+                # Power
+                power_item = QTableWidgetItem(str(power))
+                if power > 0:
+                    power_item.setForeground(QColor("#00d4ff"))
+                self.ui.REPORTTB.setItem(row, 2, power_item)
                 row += 1
     
     def update_status(self):
@@ -517,8 +626,9 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(
             f" {current_time} | P: {total_power:.0f}W | ~{monthly_cost:.0f}k VNĐ/tháng")
         
-        # Update report table periodically
+        # Update report table and chart periodically
         self.update_report_table()
+        self.update_power_chart()
     
     def closeEvent(self, event):
         """Clean up on close"""

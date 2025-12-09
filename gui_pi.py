@@ -169,17 +169,39 @@ class Ui_MainWindow(object):
         self.REPORT.setObjectName("REPORT")
         self.REPORT.setAutoFillBackground(True)
         self.TITLERP = QtWidgets.QLabel(self.REPORT)
-        self.TITLERP.setGeometry(QtCore.QRect(60, 5, 200, 30))
+        self.TITLERP.setGeometry(QtCore.QRect(10, 5, 180, 25))
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setBold(True)
         font.setWeight(75)
         self.TITLERP.setFont(font)
-        self.TITLERP.setAlignment(QtCore.Qt.AlignCenter)
+        self.TITLERP.setAlignment(QtCore.Qt.AlignLeft)
         self.TITLERP.setStyleSheet("color: #00d4ff; font-weight: bold;")
         self.TITLERP.setObjectName("TITLERP")
+        
+        # Power Chart Area
+        self.chartWidget = QtWidgets.QWidget(self.REPORT)
+        self.chartWidget.setGeometry(QtCore.QRect(10, 35, 180, 120))
+        self.chartWidget.setObjectName("chartWidget")
+        self.chartWidget.setStyleSheet("background-color: #0d1b2a; border-radius: 8px; border: 1px solid #415a77;")
+        
+        # Chart Title
+        self.chartTitle = QtWidgets.QLabel(self.REPORT)
+        self.chartTitle.setGeometry(QtCore.QRect(15, 38, 170, 15))
+        self.chartTitle.setText("CÔNG SUẤT (W)")
+        self.chartTitle.setStyleSheet("color: #778da9; font-size: 8px; background: transparent;")
+        self.chartTitle.setAlignment(QtCore.Qt.AlignCenter)
+        
+        # Total Power Label
+        self.totalPowerLabel = QtWidgets.QLabel(self.REPORT)
+        self.totalPowerLabel.setGeometry(QtCore.QRect(10, 160, 180, 20))
+        self.totalPowerLabel.setStyleSheet("color: #00d4ff; font-size: 10px; font-weight: bold;")
+        self.totalPowerLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.totalPowerLabel.setText("Tổng: 0 W")
+        
+        # Table (smaller, on the right)
         self.REPORTTB = QtWidgets.QTableWidget(self.REPORT)
-        self.REPORTTB.setGeometry(QtCore.QRect(10, 40, 380, 180))
+        self.REPORTTB.setGeometry(QtCore.QRect(200, 35, 190, 145))
         self.REPORTTB.setObjectName("REPORTTB")
         self.REPORTTB.setColumnCount(0)
         self.REPORTTB.setRowCount(0)
