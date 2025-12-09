@@ -49,9 +49,10 @@ class Ui_MainWindow(object):
                 border-radius: 8px;
                 margin: 2px 5px;
                 padding: 8px 5px;
-                font-size: 9px;
+                font-size: 11px;
                 font-weight: bold;
                 text-align: center;
+                outline: none;
             }
             QPushButton:hover {
                 background-color: rgba(0, 212, 255, 0.15);
@@ -60,25 +61,32 @@ class Ui_MainWindow(object):
             QPushButton:pressed {
                 background-color: rgba(0, 212, 255, 0.3);
             }
+            QPushButton:focus {
+                outline: none;
+                border: none;
+            }
         """
         
         # Active button style - Glowing effect
         menuButtonActiveStyle = """
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 rgba(0, 212, 255, 0.4), stop:0.5 rgba(0, 212, 255, 0.2), stop:1 rgba(0, 212, 255, 0.4));
+                background-color: rgba(0, 212, 255, 0.25);
                 color: #ffffff;
-                border: 1px solid #00d4ff;
+                border: none;
                 border-radius: 8px;
                 margin: 2px 5px;
                 padding: 8px 5px;
-                font-size: 9px;
+                font-size: 11px;
                 font-weight: bold;
                 text-align: center;
+                outline: none;
             }
             QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 rgba(0, 212, 255, 0.5), stop:0.5 rgba(0, 212, 255, 0.3), stop:1 rgba(0, 212, 255, 0.5));
+                background-color: rgba(0, 212, 255, 0.35);
+            }
+            QPushButton:focus {
+                outline: none;
+                border: none;
             }
         """
         
@@ -87,6 +95,7 @@ class Ui_MainWindow(object):
         self.pushButton_2.setStyleSheet(menuButtonActiveStyle)  # Default active
         self.pushButton_2.setMinimumHeight(50)
         self.pushButton_2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pushButton_2.setFocusPolicy(QtCore.Qt.NoFocus)
         self.verticalLayout.addWidget(self.pushButton_2)
         
         self.pushButton_3 = QtWidgets.QPushButton(self.verticalLayoutWidget)
@@ -94,6 +103,7 @@ class Ui_MainWindow(object):
         self.pushButton_3.setStyleSheet(menuButtonStyle)
         self.pushButton_3.setMinimumHeight(50)
         self.pushButton_3.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pushButton_3.setFocusPolicy(QtCore.Qt.NoFocus)
         self.verticalLayout.addWidget(self.pushButton_3)
         
         self.pushButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
@@ -101,6 +111,7 @@ class Ui_MainWindow(object):
         self.pushButton.setStyleSheet(menuButtonStyle)
         self.pushButton.setMinimumHeight(50)
         self.pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pushButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.verticalLayout.addWidget(self.pushButton)
         
         self.pushButton_4 = QtWidgets.QPushButton(self.verticalLayoutWidget)
@@ -108,6 +119,7 @@ class Ui_MainWindow(object):
         self.pushButton_4.setStyleSheet(menuButtonStyle)
         self.pushButton_4.setMinimumHeight(50)
         self.pushButton_4.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pushButton_4.setFocusPolicy(QtCore.Qt.NoFocus)
         self.verticalLayout.addWidget(self.pushButton_4)
         
         # Store styles for later use
