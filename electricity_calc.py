@@ -5,6 +5,7 @@ Vietnamese electricity pricing system
 """
 
 from config import ELECTRICITY_TIERS, VAT_RATE
+import copy
 
 
 class ElectricityCalculator:
@@ -14,8 +15,24 @@ class ElectricityCalculator:
     """
     
     def __init__(self):
-        self.tiers = ELECTRICITY_TIERS
+        self.tiers = copy.deepcopy(ELECTRICITY_TIERS)
         self.vat_rate = VAT_RATE
+    
+    def update_tier_prices(self, prices: list, vat: float = None):
+        """
+        Update tier prices dynamically
+        
+        Args:
+            prices: List of 6 prices for each tier
+            vat: VAT rate (0.08 = 8%)
+        """
+        if len(prices) == 6:
+            for i, price in enumerate(prices):
+                if i < len(self.tiers):
+                    self.tiers[i]['price'] = price
+        
+        if vat is not None:
+            self.vat_rate = vat
     
     def calculate_bill(self, kwh: float) -> dict:
         """

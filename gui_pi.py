@@ -363,68 +363,165 @@ class Ui_MainWindow(object):
         self.page = QtWidgets.QWidget()
         self.page.setObjectName("page")
         self.page.setAutoFillBackground(True)
+        
+        # Title
         self.name_ctl_4 = QtWidgets.QLabel(self.page)
-        self.name_ctl_4.setGeometry(QtCore.QRect(10, 5, 390, 30))
+        self.name_ctl_4.setGeometry(QtCore.QRect(10, 3, 390, 22))
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(9)
         font.setBold(True)
-        font.setWeight(75)
         self.name_ctl_4.setFont(font)
         self.name_ctl_4.setAlignment(QtCore.Qt.AlignCenter)
         self.name_ctl_4.setStyleSheet("color: #00d4ff; font-weight: bold;")
         self.name_ctl_4.setObjectName("name_ctl_4")
-        # Electricity tier info
-        self.tierLabel = QtWidgets.QLabel(self.page)
-        self.tierLabel.setGeometry(QtCore.QRect(10, 40, 190, 130))
-        self.tierLabel.setStyleSheet("color: #778da9; font-size: 8px;")
-        self.tierLabel.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
-        self.tierLabel.setWordWrap(True)
-        self.tierLabel.setObjectName("tierLabel")
         
-        # Threshold Settings Section
+        # ===== LEFT SIDE: Electricity Tier Prices =====
+        self.tierTitle = QtWidgets.QLabel(self.page)
+        self.tierTitle.setGeometry(QtCore.QRect(10, 28, 195, 18))
+        self.tierTitle.setText("BIỂU GIÁ ĐIỆN (VNĐ/kWh)")
+        self.tierTitle.setStyleSheet("color: #2ecc71; font-size: 8px; font-weight: bold;")
+        self.tierTitle.setAlignment(QtCore.Qt.AlignCenter)
+        
+        # Tier inputs container
+        self.tierInputs = []
+        tier_labels = ["Bậc 1 (0-50):", "Bậc 2 (51-100):", "Bậc 3 (101-200):", 
+                       "Bậc 4 (201-300):", "Bậc 5 (301-400):", "Bậc 6 (>400):"]
+        tier_defaults = [1893, 1956, 2271, 2860, 3197, 3302]
+        
+        for i in range(6):
+            y_pos = 48 + i * 28
+            
+            # Label
+            lbl = QtWidgets.QLabel(self.page)
+            lbl.setGeometry(QtCore.QRect(10, y_pos, 95, 22))
+            lbl.setText(tier_labels[i])
+            lbl.setStyleSheet("color: #778da9; font-size: 8px;")
+            
+            # SpinBox
+            spin = QtWidgets.QSpinBox(self.page)
+            spin.setGeometry(QtCore.QRect(105, y_pos, 80, 22))
+            spin.setRange(500, 10000)
+            spin.setValue(tier_defaults[i])
+            spin.setStyleSheet(
+                "background-color: #1b263b; color: #2ecc71; border: 1px solid #2ecc71; "
+                "border-radius: 3px; font-size: 8px;")
+            spin.setObjectName(f"tierInput_{i+1}")
+            self.tierInputs.append(spin)
+        
+        # VAT input
+        self.vatLabel = QtWidgets.QLabel(self.page)
+        self.vatLabel.setGeometry(QtCore.QRect(10, 220, 95, 22))
+        self.vatLabel.setText("VAT (%):")
+        self.vatLabel.setStyleSheet("color: #778da9; font-size: 8px;")
+        
+        self.vatInput = QtWidgets.QSpinBox(self.page)
+        self.vatInput.setGeometry(QtCore.QRect(105, 220, 80, 22))
+        self.vatInput.setRange(0, 20)
+        self.vatInput.setValue(8)
+        self.vatInput.setSuffix("%")
+        self.vatInput.setStyleSheet(
+            "background-color: #1b263b; color: #2ecc71; border: 1px solid #2ecc71; "
+            "border-radius: 3px; font-size: 8px;")
+        self.vatInput.setObjectName("vatInput")
+        
+        # Save Tier button
+        self.saveTierBtn = QtWidgets.QPushButton(self.page)
+        self.saveTierBtn.setGeometry(QtCore.QRect(55, 248, 100, 25))
+        self.saveTierBtn.setText("Lưu giá điện")
+        self.saveTierBtn.setObjectName("saveTierBtn")
+        
+        # ===== RIGHT SIDE: Threshold Settings =====
         self.thresholdTitle = QtWidgets.QLabel(self.page)
-        self.thresholdTitle.setGeometry(QtCore.QRect(210, 40, 190, 20))
-        self.thresholdTitle.setText("CÀI ĐẶT NGƯỠNG")
-        self.thresholdTitle.setStyleSheet("color: #f39c12; font-size: 9px; font-weight: bold;")
+        self.thresholdTitle.setGeometry(QtCore.QRect(210, 28, 195, 18))
+        self.thresholdTitle.setText("CÀI ĐẶT NGƯỠNG (W)")
+        self.thresholdTitle.setStyleSheet("color: #f39c12; font-size: 8px; font-weight: bold;")
         self.thresholdTitle.setAlignment(QtCore.Qt.AlignCenter)
+        
+        # Global thresholds
+        self.globalThresholdLabel = QtWidgets.QLabel(self.page)
+        self.globalThresholdLabel.setGeometry(QtCore.QRect(210, 48, 195, 16))
+        self.globalThresholdLabel.setText("--- Ngưỡng chung ---")
+        self.globalThresholdLabel.setStyleSheet("color: #778da9; font-size: 7px;")
+        self.globalThresholdLabel.setAlignment(QtCore.Qt.AlignCenter)
         
         # Warning threshold
         self.warningThresholdLabel = QtWidgets.QLabel(self.page)
-        self.warningThresholdLabel.setGeometry(QtCore.QRect(210, 70, 90, 20))
+        self.warningThresholdLabel.setGeometry(QtCore.QRect(210, 68, 80, 20))
         self.warningThresholdLabel.setText("Cảnh báo:")
-        self.warningThresholdLabel.setStyleSheet("color: #f39c12; font-size: 9px;")
+        self.warningThresholdLabel.setStyleSheet("color: #f39c12; font-size: 8px;")
         
         self.warningThresholdInput = QtWidgets.QSpinBox(self.page)
-        self.warningThresholdInput.setGeometry(QtCore.QRect(300, 68, 80, 24))
+        self.warningThresholdInput.setGeometry(QtCore.QRect(300, 66, 75, 22))
         self.warningThresholdInput.setRange(100, 5000)
         self.warningThresholdInput.setValue(500)
-        self.warningThresholdInput.setSuffix(" W")
         self.warningThresholdInput.setStyleSheet(
             "background-color: #1b263b; color: #f39c12; border: 1px solid #f39c12; "
-            "border-radius: 4px; padding: 2px;")
+            "border-radius: 3px; font-size: 8px;")
         self.warningThresholdInput.setObjectName("warningThresholdInput")
         
         # Critical threshold
         self.criticalThresholdLabel = QtWidgets.QLabel(self.page)
-        self.criticalThresholdLabel.setGeometry(QtCore.QRect(210, 100, 90, 20))
+        self.criticalThresholdLabel.setGeometry(QtCore.QRect(210, 92, 80, 20))
         self.criticalThresholdLabel.setText("Nguy hiểm:")
-        self.criticalThresholdLabel.setStyleSheet("color: #e74c3c; font-size: 9px;")
+        self.criticalThresholdLabel.setStyleSheet("color: #e74c3c; font-size: 8px;")
         
         self.criticalThresholdInput = QtWidgets.QSpinBox(self.page)
-        self.criticalThresholdInput.setGeometry(QtCore.QRect(300, 98, 80, 24))
+        self.criticalThresholdInput.setGeometry(QtCore.QRect(300, 90, 75, 22))
         self.criticalThresholdInput.setRange(200, 10000)
         self.criticalThresholdInput.setValue(1000)
-        self.criticalThresholdInput.setSuffix(" W")
         self.criticalThresholdInput.setStyleSheet(
             "background-color: #1b263b; color: #e74c3c; border: 1px solid #e74c3c; "
-            "border-radius: 4px; padding: 2px;")
+            "border-radius: 3px; font-size: 8px;")
         self.criticalThresholdInput.setObjectName("criticalThresholdInput")
         
-        # Save button
+        # Room thresholds section
+        self.roomThresholdLabel = QtWidgets.QLabel(self.page)
+        self.roomThresholdLabel.setGeometry(QtCore.QRect(210, 118, 195, 16))
+        self.roomThresholdLabel.setText("--- Ngưỡng theo phòng ---")
+        self.roomThresholdLabel.setStyleSheet("color: #778da9; font-size: 7px;")
+        self.roomThresholdLabel.setAlignment(QtCore.Qt.AlignCenter)
+        
+        # Room threshold inputs
+        self.roomThresholdInputs = []
+        room_names = ["Phòng 1:", "Phòng 2:", "Phòng 3:", "Phòng 4:"]
+        
+        for i in range(4):
+            y_pos = 138 + i * 26
+            
+            # Label
+            lbl = QtWidgets.QLabel(self.page)
+            lbl.setGeometry(QtCore.QRect(210, y_pos, 70, 20))
+            lbl.setText(room_names[i])
+            lbl.setStyleSheet("color: #00d4ff; font-size: 8px;")
+            
+            # SpinBox
+            spin = QtWidgets.QSpinBox(self.page)
+            spin.setGeometry(QtCore.QRect(280, y_pos, 75, 20))
+            spin.setRange(50, 2000)
+            spin.setValue(200)
+            spin.setStyleSheet(
+                "background-color: #1b263b; color: #00d4ff; border: 1px solid #00d4ff; "
+                "border-radius: 3px; font-size: 8px;")
+            spin.setObjectName(f"roomThreshold_{i+1}")
+            self.roomThresholdInputs.append(spin)
+        
+        # Save Threshold button
         self.saveThresholdBtn = QtWidgets.QPushButton(self.page)
-        self.saveThresholdBtn.setGeometry(QtCore.QRect(260, 135, 80, 28))
-        self.saveThresholdBtn.setText("Lưu")
+        self.saveThresholdBtn.setGeometry(QtCore.QRect(255, 248, 100, 25))
+        self.saveThresholdBtn.setText("Lưu ngưỡng")
         self.saveThresholdBtn.setObjectName("saveThresholdBtn")
+        
+        # Decorative divider line
+        self.setupDivider = QtWidgets.QFrame(self.page)
+        self.setupDivider.setGeometry(QtCore.QRect(200, 35, 2, 235))
+        self.setupDivider.setStyleSheet("background-color: #415a77;")
+        self.setupDivider.setFrameShape(QtWidgets.QFrame.VLine)
+        
+        # Remove old tierLabel - we don't need it anymore
+        self.tierLabel = QtWidgets.QLabel(self.page)
+        self.tierLabel.setGeometry(QtCore.QRect(0, 0, 0, 0))
+        self.tierLabel.setVisible(False)
+        self.tierLabel.setObjectName("tierLabel")
         
         self.stackedWidget.addWidget(self.page)
         MainWindow.setCentralWidget(self.centralwidget)

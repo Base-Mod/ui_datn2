@@ -725,21 +725,51 @@ class MainWindow(QMainWindow):
         self.warning_threshold = POWER_THRESHOLDS['warning']
         self.critical_threshold = POWER_THRESHOLDS['critical']
         
-        # Set initial values
+        # Room thresholds (default 200W each)
+        self.room_thresholds = [200, 200, 200, 200]
+        
+        # Set initial values for global thresholds
         self.ui.warningThresholdInput.setValue(self.warning_threshold)
         self.ui.criticalThresholdInput.setValue(self.critical_threshold)
         
-        # Connect save button
+        # Set initial values for room thresholds
+        for i, spin in enumerate(self.ui.roomThresholdInputs):
+            spin.setValue(self.room_thresholds[i])
+        
+        # Connect save buttons
         self.ui.saveThresholdBtn.clicked.connect(self.save_thresholds)
+        self.ui.saveTierBtn.clicked.connect(self.save_tier_prices)
     
     def save_thresholds(self):
         """Save threshold settings"""
         self.warning_threshold = self.ui.warningThresholdInput.value()
         self.critical_threshold = self.ui.criticalThresholdInput.value()
         
+        # Save room thresholds
+        for i, spin in enumerate(self.ui.roomThresholdInputs):
+            self.room_thresholds[i] = spin.value()
+        
         # Visual feedback
-        self.ui.saveThresholdBtn.setText("✓")
-        QTimer.singleShot(1000, lambda: self.ui.saveThresholdBtn.setText("Lưu"))
+        self.ui.saveThresholdBtn.setText("✓ Đã lưu")
+        QTimer.singleShot(1500, lambda: self.ui.saveThresholdBtn.setText("Lưu ngưỡng"))
+    
+    def save_tier_prices(self):
+        """Save electricity tier prices"""
+        # Get tier prices from inputs
+        tier_prices = []
+        for spin in self.ui.tierInputs:
+            tier_prices.append(spin.value())
+        
+        # Get VAT
+        vat = self.ui.vatInput.value() / 100.0
+        
+        # Update the calculator with new prices
+        # Note: In a real app, you'd save this to config/database
+        self.calculator.update_tier_prices(tier_prices, vat)
+        
+        # Visual feedback
+        self.ui.saveTierBtn.setText("✓ Đã lưu")
+        QTimer.singleShot(1500, lambda: self.ui.saveTierBtn.setText("Lưu giá điện"))
     
     def on_room_selected(self, room_index):
         """Handle room selection from bar chart"""
@@ -766,17 +796,22 @@ class MainWindow(QMainWindow):
         """Update power chart with current room power data"""
         chart_data = []
         total_power = 0
+        room_warnings = []
         
-        for room in self.rooms:
+        for i, room in enumerate(self.rooms):
             room_power = self.modbus.get_room_power(room['id'])
             chart_data.append((room['name'], room_power))
             total_power += room_power
+            
+            # Check room threshold
+            if i < len(self.room_thresholds) and room_power > self.room_thresholds[i]:
+                room_warnings.append(f"P{i+1}:{int(room_power)}W")
         
         self.power_chart.set_data(chart_data)
         self.ui.totalPowerLabel.setText(f"Tổng: {int(total_power)} W")
         
         # Check thresholds and update warning
-        self.check_power_threshold(total_power)
+        self.check_power_threshold(total_power, room_warnings)
     
     def update_report_table(self):
         """Update report table with current device states"""
@@ -826,13 +861,19 @@ class MainWindow(QMainWindow):
         self.update_power_chart()
         self.update_pie_chart()
     
-    def check_power_threshold(self, total_power):
+    def check_power_threshold(self, total_power, room_warnings=None):
         """Check power against thresholds and show warnings"""
-        if total_power >= self.critical_threshold:
-            # Critical warning - red flashing
+        # Check for room-specific warnings first
+        if room_warnings and len(room_warnings) > 0:
+            warning_text = "⚠ " + ", ".join(room_warnings[:2])  # Show max 2 rooms
+            self.ui.warningLabel.setText(warning_text)
+            self.ui.warningLabel.setStyleSheet(
+                "color: #00d4ff; font-size: 9px; font-weight: bold;")
+        elif total_power >= self.critical_threshold:
+            # Critical warning - red
             self.ui.warningLabel.setText(f"⚠ NGUY HIỂM: {int(total_power)}W!")
             self.ui.warningLabel.setStyleSheet(
-                "color: #e74c3c; font-size: 10px; font-weight: bold; "
+                "color: #e74c3c; font-size: 9px; font-weight: bold; "
                 "background-color: rgba(231, 76, 60, 0.3); border-radius: 4px;")
             self.ui.totalPowerLabel.setStyleSheet(
                 "color: #e74c3c; font-size: 10px; font-weight: bold;")
@@ -840,7 +881,7 @@ class MainWindow(QMainWindow):
             # Warning - orange
             self.ui.warningLabel.setText(f"⚠ CẢNH BÁO: {int(total_power)}W")
             self.ui.warningLabel.setStyleSheet(
-                "color: #f39c12; font-size: 10px; font-weight: bold; "
+                "color: #f39c12; font-size: 9px; font-weight: bold; "
                 "background-color: rgba(243, 156, 18, 0.2); border-radius: 4px;")
             self.ui.totalPowerLabel.setStyleSheet(
                 "color: #f39c12; font-size: 10px; font-weight: bold;")
