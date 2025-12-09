@@ -501,14 +501,14 @@ class MainWindow(QMainWindow):
         # Setup report table
         self.setup_report_table()
         
+        # Setup threshold settings first (needed for chart)
+        self.setup_thresholds()
+        
         # Setup power chart
         self.setup_power_chart()
         
         # Setup pie chart
         self.setup_pie_chart()
-        
-        # Setup threshold settings
-        self.setup_thresholds()
         
         # Setup status bar with time
         self.timer = QTimer()
