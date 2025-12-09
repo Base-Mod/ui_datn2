@@ -154,12 +154,12 @@ class PieChart(QWidget):
         # Draw room name
         painter.setPen(QPen(QColor("#00d4ff")))
         painter.setFont(QFont("Arial", 9, QFont.Bold))
-        painter.drawText(0, 0, w, 18, Qt.AlignCenter, self.room_name)
+        painter.drawText(0, 2, w, 16, Qt.AlignCenter, self.room_name)
         
         if not self.data:
             painter.setPen(QPen(QColor("#778da9")))
             painter.setFont(QFont("Arial", 8))
-            painter.drawText(0, 20, w, h-20, Qt.AlignCenter, "Nhấp phòng\nđể xem")
+            painter.drawText(0, 20, w, h-20, Qt.AlignCenter, "Nhấp phòng")
             return
         
         # Calculate total
@@ -167,11 +167,13 @@ class PieChart(QWidget):
         if total == 0:
             painter.setPen(QPen(QColor("#778da9")))
             painter.setFont(QFont("Arial", 8))
-            painter.drawText(0, 20, w, h-40, Qt.AlignCenter, "Tất cả OFF")
+            painter.drawText(0, 20, w, 40, Qt.AlignCenter, "Tất cả OFF")
+            # Still draw legend
+            self.draw_legend(painter, w, 65)
             return
         
         # Pie chart dimensions
-        pie_size = min(w, h - 40) - 20
+        pie_size = 55
         pie_x = (w - pie_size) // 2
         pie_y = 20
         
@@ -185,29 +187,33 @@ class PieChart(QWidget):
             
             color = self.colors[i % len(self.colors)]
             painter.setBrush(QBrush(color))
-            painter.setPen(QPen(QColor("#0d1b2a"), 2))
+            painter.setPen(QPen(QColor("#0d1b2a"), 1))
             painter.drawPie(pie_x, pie_y, pie_size, pie_size, start_angle, span_angle)
             
             start_angle += span_angle
         
         # Draw legend
-        legend_y = pie_y + pie_size + 5
+        self.draw_legend(painter, w, pie_y + pie_size + 8)
+    
+    def draw_legend(self, painter, w, start_y):
+        """Draw device legend"""
         legend_x = 5
         painter.setFont(QFont("Arial", 7))
         
         for i, (name, power, is_on) in enumerate(self.data):
+            y = start_y + i * 13
             color = self.colors[i % len(self.colors)] if is_on else QColor("#555")
             
             # Color box
             painter.setBrush(QBrush(color))
             painter.setPen(Qt.NoPen)
-            painter.drawRect(legend_x, legend_y + i * 12, 8, 8)
+            painter.drawRect(legend_x, y, 8, 8)
             
             # Text
-            painter.setPen(QPen(QColor("#e0e1dd") if is_on else QColor("#555")))
-            text = f"{name}: {power}W" if is_on else f"{name}: OFF"
-            painter.drawText(legend_x + 12, legend_y + i * 12 - 1, w - 20, 12, 
-                           Qt.AlignLeft | Qt.AlignVCenter, text)
+            painter.setPen(QPen(QColor("#e0e1dd") if is_on else QColor("#666")))
+            status = f"{power}W" if is_on else "OFF"
+            painter.drawText(legend_x + 12, y - 2, w - 20, 12, 
+                           Qt.AlignLeft | Qt.AlignVCenter, f"{name}: {status}")
 
 
 def hide_taskbar():
@@ -680,12 +686,12 @@ class MainWindow(QMainWindow):
         self.ui.REPORTTB.setHorizontalHeaderLabels(["TB", "W"])
         
         # Set column widths
-        header = self.ui.REPORTTB.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.Stretch)
-        header.setSectionResizeMode(1, QHeaderView.Stretch)
+        self.ui.REPORTTB.setColumnWidth(0, 55)
+        self.ui.REPORTTB.setColumnWidth(1, 35)
         
         # Hide row numbers
         self.ui.REPORTTB.verticalHeader().setVisible(False)
+        self.ui.REPORTTB.horizontalHeader().setStretchLastSection(True)
         
         self.update_report_table()
     
@@ -772,12 +778,14 @@ class MainWindow(QMainWindow):
         
         row = 0
         for room in self.rooms:
+            room_num = room['name'][-1]  # Get room number
             for device in room['devices']:
                 state = self.modbus.get_device_state(room['id'], device['id'])
                 power = device['power'] if state else 0
                 
-                # Device with status color
-                device_text = f"{room['name'][-1]}:{device['name'][:3]}"
+                # Device: P1:Đ (P1:Lamp)
+                dev_short = device['name'][0]  # First char of device name
+                device_text = f"P{room_num}:{dev_short}"
                 device_item = QTableWidgetItem(device_text)
                 if state:
                     device_item.setForeground(QColor("#2ecc71"))
@@ -787,8 +795,7 @@ class MainWindow(QMainWindow):
                 
                 # Power
                 power_item = QTableWidgetItem(str(power))
-                if power > 0:
-                    power_item.setForeground(QColor("#00d4ff"))
+                power_item.setForeground(QColor("#00d4ff") if power > 0 else QColor("#778da9"))
                 self.ui.REPORTTB.setItem(row, 1, power_item)
                 row += 1
     
