@@ -388,6 +388,32 @@ class Ui_MainWindow(object):
                        "Bậc 4 (201-300):", "Bậc 5 (301-400):", "Bậc 6 (>400):"]
         tier_defaults = [1893, 1956, 2271, 2860, 3197, 3302]
         
+        spinStyle = """
+            QSpinBox {
+                background-color: #1b263b;
+                color: #2ecc71;
+                border: 1px solid #2ecc71;
+                border-radius: 4px;
+                font-size: 8px;
+                padding: 2px;
+            }
+            QSpinBox:hover {
+                border: 1px solid #58d68d;
+                background-color: #243447;
+            }
+            QSpinBox:focus {
+                border: 2px solid #2ecc71;
+            }
+            QSpinBox::up-button, QSpinBox::down-button {
+                width: 16px;
+                background-color: #2ecc71;
+                border-radius: 2px;
+            }
+            QSpinBox::up-button:hover, QSpinBox::down-button:hover {
+                background-color: #58d68d;
+            }
+        """
+        
         for i in range(6):
             y_pos = 48 + i * 28
             
@@ -402,9 +428,7 @@ class Ui_MainWindow(object):
             spin.setGeometry(QtCore.QRect(105, y_pos, 80, 22))
             spin.setRange(500, 10000)
             spin.setValue(tier_defaults[i])
-            spin.setStyleSheet(
-                "background-color: #1b263b; color: #2ecc71; border: 1px solid #2ecc71; "
-                "border-radius: 3px; font-size: 8px;")
+            spin.setStyleSheet(spinStyle)
             spin.setObjectName(f"tierInput_{i+1}")
             self.tierInputs.append(spin)
         
@@ -419,15 +443,33 @@ class Ui_MainWindow(object):
         self.vatInput.setRange(0, 20)
         self.vatInput.setValue(8)
         self.vatInput.setSuffix("%")
-        self.vatInput.setStyleSheet(
-            "background-color: #1b263b; color: #2ecc71; border: 1px solid #2ecc71; "
-            "border-radius: 3px; font-size: 8px;")
+        self.vatInput.setStyleSheet(spinStyle)
         self.vatInput.setObjectName("vatInput")
         
-        # Save Tier button
+        # Save Tier button - Green style
         self.saveTierBtn = QtWidgets.QPushButton(self.page)
         self.saveTierBtn.setGeometry(QtCore.QRect(55, 248, 100, 25))
         self.saveTierBtn.setText("Lưu giá điện")
+        self.saveTierBtn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #27ae60, stop:0.5 #2ecc71, stop:1 #27ae60);
+                color: white;
+                border: 1px solid #1e8449;
+                border-radius: 5px;
+                font-size: 9px;
+                font-weight: bold;
+                padding: 3px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2ecc71, stop:0.5 #58d68d, stop:1 #2ecc71);
+            }
+            QPushButton:pressed {
+                background: #1e8449;
+            }
+        """)
+        self.saveTierBtn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.saveTierBtn.setObjectName("saveTierBtn")
         
         # ===== RIGHT SIDE: Threshold Settings =====
@@ -450,13 +492,31 @@ class Ui_MainWindow(object):
         self.warningThresholdLabel.setText("Cảnh báo:")
         self.warningThresholdLabel.setStyleSheet("color: #f39c12; font-size: 8px;")
         
+        warningSpinStyle = """
+            QSpinBox {
+                background-color: #1b263b;
+                color: #f39c12;
+                border: 1px solid #f39c12;
+                border-radius: 4px;
+                font-size: 8px;
+                padding: 2px;
+            }
+            QSpinBox:hover {
+                border: 1px solid #f7b731;
+                background-color: #243447;
+            }
+            QSpinBox::up-button, QSpinBox::down-button {
+                width: 14px;
+                background-color: #f39c12;
+                border-radius: 2px;
+            }
+        """
+        
         self.warningThresholdInput = QtWidgets.QSpinBox(self.page)
         self.warningThresholdInput.setGeometry(QtCore.QRect(300, 66, 75, 22))
         self.warningThresholdInput.setRange(100, 5000)
         self.warningThresholdInput.setValue(500)
-        self.warningThresholdInput.setStyleSheet(
-            "background-color: #1b263b; color: #f39c12; border: 1px solid #f39c12; "
-            "border-radius: 3px; font-size: 8px;")
+        self.warningThresholdInput.setStyleSheet(warningSpinStyle)
         self.warningThresholdInput.setObjectName("warningThresholdInput")
         
         # Critical threshold
@@ -465,13 +525,31 @@ class Ui_MainWindow(object):
         self.criticalThresholdLabel.setText("Nguy hiểm:")
         self.criticalThresholdLabel.setStyleSheet("color: #e74c3c; font-size: 8px;")
         
+        criticalSpinStyle = """
+            QSpinBox {
+                background-color: #1b263b;
+                color: #e74c3c;
+                border: 1px solid #e74c3c;
+                border-radius: 4px;
+                font-size: 8px;
+                padding: 2px;
+            }
+            QSpinBox:hover {
+                border: 1px solid #ec7063;
+                background-color: #243447;
+            }
+            QSpinBox::up-button, QSpinBox::down-button {
+                width: 14px;
+                background-color: #e74c3c;
+                border-radius: 2px;
+            }
+        """
+        
         self.criticalThresholdInput = QtWidgets.QSpinBox(self.page)
         self.criticalThresholdInput.setGeometry(QtCore.QRect(300, 90, 75, 22))
         self.criticalThresholdInput.setRange(200, 10000)
         self.criticalThresholdInput.setValue(1000)
-        self.criticalThresholdInput.setStyleSheet(
-            "background-color: #1b263b; color: #e74c3c; border: 1px solid #e74c3c; "
-            "border-radius: 3px; font-size: 8px;")
+        self.criticalThresholdInput.setStyleSheet(criticalSpinStyle)
         self.criticalThresholdInput.setObjectName("criticalThresholdInput")
         
         # Room thresholds section
@@ -484,6 +562,26 @@ class Ui_MainWindow(object):
         # Room threshold inputs
         self.roomThresholdInputs = []
         room_names = ["Phòng 1:", "Phòng 2:", "Phòng 3:", "Phòng 4:"]
+        
+        roomSpinStyle = """
+            QSpinBox {
+                background-color: #1b263b;
+                color: #00d4ff;
+                border: 1px solid #00d4ff;
+                border-radius: 4px;
+                font-size: 8px;
+                padding: 2px;
+            }
+            QSpinBox:hover {
+                border: 1px solid #5dade2;
+                background-color: #243447;
+            }
+            QSpinBox::up-button, QSpinBox::down-button {
+                width: 14px;
+                background-color: #00d4ff;
+                border-radius: 2px;
+            }
+        """
         
         for i in range(4):
             y_pos = 138 + i * 26
@@ -499,16 +597,34 @@ class Ui_MainWindow(object):
             spin.setGeometry(QtCore.QRect(280, y_pos, 75, 20))
             spin.setRange(50, 2000)
             spin.setValue(200)
-            spin.setStyleSheet(
-                "background-color: #1b263b; color: #00d4ff; border: 1px solid #00d4ff; "
-                "border-radius: 3px; font-size: 8px;")
+            spin.setStyleSheet(roomSpinStyle)
             spin.setObjectName(f"roomThreshold_{i+1}")
             self.roomThresholdInputs.append(spin)
         
-        # Save Threshold button
+        # Save Threshold button - Orange style
         self.saveThresholdBtn = QtWidgets.QPushButton(self.page)
         self.saveThresholdBtn.setGeometry(QtCore.QRect(255, 248, 100, 25))
         self.saveThresholdBtn.setText("Lưu ngưỡng")
+        self.saveThresholdBtn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #d68910, stop:0.5 #f39c12, stop:1 #d68910);
+                color: white;
+                border: 1px solid #b9770e;
+                border-radius: 5px;
+                font-size: 9px;
+                font-weight: bold;
+                padding: 3px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #f39c12, stop:0.5 #f7b731, stop:1 #f39c12);
+            }
+            QPushButton:pressed {
+                background: #b9770e;
+            }
+        """)
+        self.saveThresholdBtn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.saveThresholdBtn.setObjectName("saveThresholdBtn")
         
         # Decorative divider line
