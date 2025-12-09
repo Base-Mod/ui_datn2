@@ -254,56 +254,228 @@ class Ui_MainWindow(object):
         self.CONTROL = QtWidgets.QWidget()
         self.CONTROL.setObjectName("CONTROL")
         self.CONTROL.setAutoFillBackground(True)
+        
+        # Title: CONTROL DEVICES
         self.name_ctl = QtWidgets.QLabel(self.CONTROL)
-        self.name_ctl.setGeometry(QtCore.QRect(60, 5, 200, 30))
+        self.name_ctl.setGeometry(QtCore.QRect(10, 5, 385, 28))
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(11)
         font.setBold(True)
         font.setWeight(75)
         self.name_ctl.setFont(font)
         self.name_ctl.setAlignment(QtCore.Qt.AlignCenter)
         self.name_ctl.setStyleSheet("color: #00d4ff; font-weight: bold;")
         self.name_ctl.setObjectName("name_ctl")
-        self.pushButton_5 = QtWidgets.QPushButton(self.CONTROL)
-        self.pushButton_5.setGeometry(QtCore.QRect(130, 70, 60, 35))
-        self.pushButton_5.setObjectName("pushButton_5")
-        self.label_8 = QtWidgets.QLabel(self.CONTROL)
-        self.label_8.setGeometry(QtCore.QRect(30, 75, 90, 25))
-        font = QtGui.QFont()
-        font.setPointSize(9)
-        self.label_8.setFont(font)
-        self.label_8.setObjectName("label_8")
-        self.name_ctl_2 = QtWidgets.QLabel(self.CONTROL)
-        self.name_ctl_2.setGeometry(QtCore.QRect(100, 35, 60, 30))
+        
+        # Room indicator card
+        self.roomCard = QtWidgets.QFrame(self.CONTROL)
+        self.roomCard.setGeometry(QtCore.QRect(120, 35, 165, 35))
+        self.roomCard.setStyleSheet("""
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop:0 transparent, stop:0.15 rgba(0, 212, 255, 0.2), stop:0.85 rgba(0, 212, 255, 0.2), stop:1 transparent);
+            border-radius: 8px;
+            border: 1px solid #1b4965;
+        """)
+        
+        self.name_ctl_2 = QtWidgets.QLabel(self.roomCard)
+        self.name_ctl_2.setGeometry(QtCore.QRect(10, 5, 60, 25))
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setBold(True)
         font.setWeight(75)
         self.name_ctl_2.setFont(font)
+        self.name_ctl_2.setStyleSheet("color: #778da9; background: transparent; border: none;")
         self.name_ctl_2.setObjectName("name_ctl_2")
-        self.name_ctl_3 = QtWidgets.QLabel(self.CONTROL)
-        self.name_ctl_3.setGeometry(QtCore.QRect(165, 35, 30, 30))
+        
+        self.name_ctl_3 = QtWidgets.QLabel(self.roomCard)
+        self.name_ctl_3.setGeometry(QtCore.QRect(75, 5, 80, 25))
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(12)
         font.setBold(True)
         font.setWeight(75)
         self.name_ctl_3.setFont(font)
+        self.name_ctl_3.setStyleSheet("color: #00d4ff; background: transparent; border: none;")
         self.name_ctl_3.setObjectName("name_ctl_3")
-        self.label_9 = QtWidgets.QLabel(self.CONTROL)
-        self.label_9.setGeometry(QtCore.QRect(30, 125, 80, 25))
+        
+        # Navigation buttons (left & right of room card)
+        navButtonStyle = """
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #1b4965, stop:1 #0d1b2a);
+                color: #00d4ff;
+                border: 1px solid #00d4ff;
+                border-radius: 6px;
+                font-weight: bold;
+                font-size: 10px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #00d4ff, stop:1 #1b4965);
+                color: #ffffff;
+            }
+            QPushButton:pressed {
+                background-color: #00d4ff;
+                color: #0d1b2a;
+            }
+        """
+        
+        self.pushButton_7 = QtWidgets.QPushButton(self.CONTROL)
+        self.pushButton_7.setGeometry(QtCore.QRect(70, 40, 45, 28))
+        self.pushButton_7.setStyleSheet(navButtonStyle)
+        self.pushButton_7.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pushButton_7.setObjectName("pushButton_7")
+        
+        self.pushButton_8 = QtWidgets.QPushButton(self.CONTROL)
+        self.pushButton_8.setGeometry(QtCore.QRect(290, 40, 45, 28))
+        self.pushButton_8.setStyleSheet(navButtonStyle)
+        self.pushButton_8.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pushButton_8.setObjectName("pushButton_8")
+        
+        # Device 1 Card
+        self.device1Card = QtWidgets.QFrame(self.CONTROL)
+        self.device1Card.setGeometry(QtCore.QRect(15, 80, 180, 90))
+        self.device1Card.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #1b263b, stop:1 #0d1b2a);
+                border-radius: 10px;
+                border: 1px solid #415a77;
+            }
+        """)
+        
+        self.device1Icon = QtWidgets.QLabel(self.device1Card)
+        self.device1Icon.setGeometry(QtCore.QRect(15, 15, 30, 30))
+        self.device1Icon.setText("💡")
+        self.device1Icon.setStyleSheet("font-size: 20px; background: transparent; border: none;")
+        
+        self.label_8 = QtWidgets.QLabel(self.device1Card)
+        self.label_8.setGeometry(QtCore.QRect(50, 15, 120, 30))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        font.setBold(True)
+        self.label_8.setFont(font)
+        self.label_8.setStyleSheet("color: #e0e1dd; background: transparent; border: none;")
+        self.label_8.setObjectName("label_8")
+        
+        # Toggle button style for devices
+        toggleOnStyle = """
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #2ecc71, stop:1 #27ae60);
+                color: #ffffff;
+                border: none;
+                border-radius: 15px;
+                font-weight: bold;
+                font-size: 11px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #27ae60, stop:1 #2ecc71);
+            }
+        """
+        
+        self.pushButton_5 = QtWidgets.QPushButton(self.device1Card)
+        self.pushButton_5.setGeometry(QtCore.QRect(50, 50, 80, 30))
+        self.pushButton_5.setStyleSheet(toggleOnStyle)
+        self.pushButton_5.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pushButton_5.setObjectName("pushButton_5")
+        
+        # Device 1 status indicator
+        self.device1Status = QtWidgets.QLabel(self.device1Card)
+        self.device1Status.setGeometry(QtCore.QRect(140, 55, 30, 20))
+        self.device1Status.setText("●")
+        self.device1Status.setStyleSheet("color: #2ecc71; font-size: 14px; background: transparent; border: none;")
+        self.device1Status.setAlignment(QtCore.Qt.AlignCenter)
+        
+        # Device 2 Card
+        self.device2Card = QtWidgets.QFrame(self.CONTROL)
+        self.device2Card.setGeometry(QtCore.QRect(205, 80, 180, 90))
+        self.device2Card.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #1b263b, stop:1 #0d1b2a);
+                border-radius: 10px;
+                border: 1px solid #415a77;
+            }
+        """)
+        
+        self.device2Icon = QtWidgets.QLabel(self.device2Card)
+        self.device2Icon.setGeometry(QtCore.QRect(15, 15, 30, 30))
+        self.device2Icon.setText("🔌")
+        self.device2Icon.setStyleSheet("font-size: 20px; background: transparent; border: none;")
+        
+        self.label_9 = QtWidgets.QLabel(self.device2Card)
+        self.label_9.setGeometry(QtCore.QRect(50, 15, 120, 30))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        font.setBold(True)
+        self.label_9.setFont(font)
+        self.label_9.setStyleSheet("color: #e0e1dd; background: transparent; border: none;")
+        self.label_9.setObjectName("label_9")
+        
+        self.pushButton_6 = QtWidgets.QPushButton(self.device2Card)
+        self.pushButton_6.setGeometry(QtCore.QRect(50, 50, 80, 30))
+        self.pushButton_6.setStyleSheet(toggleOnStyle)
+        self.pushButton_6.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pushButton_6.setObjectName("pushButton_6")
+        
+        # Device 2 status indicator
+        self.device2Status = QtWidgets.QLabel(self.device2Card)
+        self.device2Status.setGeometry(QtCore.QRect(140, 55, 30, 20))
+        self.device2Status.setText("●")
+        self.device2Status.setStyleSheet("color: #2ecc71; font-size: 14px; background: transparent; border: none;")
+        self.device2Status.setAlignment(QtCore.Qt.AlignCenter)
+        
+        # Power info section
+        self.powerInfoCard = QtWidgets.QFrame(self.CONTROL)
+        self.powerInfoCard.setGeometry(QtCore.QRect(15, 180, 370, 75))
+        self.powerInfoCard.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 rgba(27, 38, 59, 0.9), stop:0.5 rgba(13, 27, 42, 0.95), stop:1 rgba(27, 38, 59, 0.9));
+                border-radius: 10px;
+                border: 1px solid #415a77;
+            }
+        """)
+        
+        self.powerLabel = QtWidgets.QLabel(self.powerInfoCard)
+        self.powerLabel.setGeometry(QtCore.QRect(10, 10, 170, 25))
+        self.powerLabel.setText("⚡ Công suất phòng:")
         font = QtGui.QFont()
         font.setPointSize(9)
-        self.label_9.setFont(font)
-        self.label_9.setObjectName("label_9")
-        self.pushButton_6 = QtWidgets.QPushButton(self.CONTROL)
-        self.pushButton_6.setGeometry(QtCore.QRect(130, 120, 60, 35))
-        self.pushButton_6.setObjectName("pushButton_6")
-        self.pushButton_7 = QtWidgets.QPushButton(self.CONTROL)
-        self.pushButton_7.setGeometry(QtCore.QRect(260, 75, 50, 25))
-        self.pushButton_7.setObjectName("pushButton_7")
-        self.pushButton_8 = QtWidgets.QPushButton(self.CONTROL)
-        self.pushButton_8.setGeometry(QtCore.QRect(320, 75, 50, 25))
-        self.pushButton_8.setObjectName("pushButton_8")
+        font.setBold(True)
+        self.powerLabel.setFont(font)
+        self.powerLabel.setStyleSheet("color: #778da9; background: transparent; border: none;")
+        
+        self.roomPowerValue = QtWidgets.QLabel(self.powerInfoCard)
+        self.roomPowerValue.setGeometry(QtCore.QRect(180, 5, 180, 35))
+        self.roomPowerValue.setText("0 W")
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        font.setBold(True)
+        self.roomPowerValue.setFont(font)
+        self.roomPowerValue.setStyleSheet("color: #00d4ff; background: transparent; border: none;")
+        self.roomPowerValue.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        
+        self.energyLabel = QtWidgets.QLabel(self.powerInfoCard)
+        self.energyLabel.setGeometry(QtCore.QRect(10, 45, 170, 22))
+        self.energyLabel.setText("📊 Điện năng tiêu thụ:")
+        font = QtGui.QFont()
+        font.setPointSize(9)
+        font.setBold(True)
+        self.energyLabel.setFont(font)
+        self.energyLabel.setStyleSheet("color: #778da9; background: transparent; border: none;")
+        
+        self.roomEnergyValue = QtWidgets.QLabel(self.powerInfoCard)
+        self.roomEnergyValue.setGeometry(QtCore.QRect(180, 42, 180, 28))
+        self.roomEnergyValue.setText("0.00 kWh")
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.roomEnergyValue.setFont(font)
+        self.roomEnergyValue.setStyleSheet("color: #f39c12; background: transparent; border: none;")
+        self.roomEnergyValue.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        
         self.stackedWidget.addWidget(self.CONTROL)
         self.REPORT = QtWidgets.QWidget()
         self.REPORT.setObjectName("REPORT")
