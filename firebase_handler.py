@@ -240,7 +240,7 @@ class FirebaseHandler:
     # ===== Device Control Methods =====
     
     def set_device_state(self, room_id: int, device_id: int, state: bool) -> bool:
-        """Set device state in Firebase"""
+        """Set device state in Firebase (async - doesn't block UI)"""
         if room_id in self.device_states and device_id in self.device_states[room_id]:
             self.device_states[room_id][device_id]['state'] = state
         
@@ -248,18 +248,18 @@ class FirebaseHandler:
             print(f"[SIM] Firebase: Room {room_id}, Device {device_id}: {'ON' if state else 'OFF'}")
             return True
         
-        try:
-            # Update control path
-            self.db.child("power_management").child("control").child(f"room{room_id}").child(f"device{device_id}").set(state)
-            
-            # Update rooms path
-            self.db.child("power_management").child("rooms").child(f"room{room_id}").child("devices").child(f"device{device_id}").update({"state": state})
-            
-            print(f"[FIREBASE] Set Room {room_id}, Device {device_id}: {'ON' if state else 'OFF'}")
-            return True
-        except Exception as e:
-            print(f"[ERROR] Firebase set device state: {e}")
-            return False
+        # Run Firebase update in background thread
+        def update_firebase():
+            try:
+                self.db.child("power_management").child("control").child(f"room{room_id}").child(f"device{device_id}").set(state)
+                self.db.child("power_management").child("rooms").child(f"room{room_id}").child("devices").child(f"device{device_id}").update({"state": state})
+                print(f"[FIREBASE] Set Room {room_id}, Device {device_id}: {'ON' if state else 'OFF'}")
+            except Exception as e:
+                print(f"[ERROR] Firebase set device state: {e}")
+        
+        thread = threading.Thread(target=update_firebase, daemon=True)
+        thread.start()
+        return True
     
     def get_device_state(self, room_id: int, device_id: int) -> bool:
         """Get device state from local cache"""
@@ -274,87 +274,44 @@ class FirebaseHandler:
         return self.set_device_state(room_id, device_id, new_state)
     
     def get_room_power(self, room_id: int) -> float:
-        """Get total power for a room from Firebase"""
-        # Try to read total_power from Firebase
-        if not self.simulation_mode and self.db:
-            try:
-                data = self.db.child("power_management").child("rooms").child(f"room{room_id}").child("total_power").get().val()
-                if data is not None:
-                    return float(data)
-            except Exception as e:
-                print(f"[ERROR] Get room power: {e}")
-        
-        # Fallback: sum device powers
+        """Get total power for a room from local cache (fast)"""
+        # Use local cache - Firebase stream updates it automatically
         total = 0.0
         if room_id in self.device_states:
             for device_id, device_data in self.device_states[room_id].items():
                 if device_data['state']:
-                    total += self.get_device_power(room_id, device_id)
+                    total += device_data['power']
         return total
     
     def get_active_power(self) -> float:
-        """Get total active power from Firebase"""
-        # Try to read from Firebase first
-        if not self.simulation_mode and self.db:
-            try:
-                data = self.db.child("power_management").child("total").child("power").get().val()
-                if data is not None:
-                    return float(data)
-            except Exception as e:
-                print(f"[ERROR] Get total power: {e}")
-        
-        # Fallback: sum all room powers
+        """Get total active power from local cache (fast)"""
+        # Use local cache - Firebase stream updates it automatically
         total = 0.0
         for room_id in self.device_states:
             total += self.get_room_power(room_id)
         return total
     
     def get_device_power(self, room_id: int, device_id: int) -> float:
-        """Get power for a specific device from Firebase (actual reading)"""
-        if not self.simulation_mode and self.db:
-            try:
-                data = self.db.child("power_management").child("rooms").child(f"room{room_id}").child("devices").child(f"device{device_id}").child("power").get().val()
-                if data is not None:
-                    return float(data)
-            except Exception as e:
-                print(f"[ERROR] Get device power: {e}")
-        
-        # Fallback: return max_power if device is ON
+        """Get power for a specific device from local cache"""
         if room_id in self.device_states and device_id in self.device_states[room_id]:
             if self.device_states[room_id][device_id]['state']:
                 return self.device_states[room_id][device_id]['power']
         return 0.0
     
     def get_all_room_data(self, room_id: int) -> dict:
-        """Get all data for a room including device powers"""
+        """Get all data for a room from local cache (fast)"""
         result = {
             'name': '',
             'total_power': 0,
             'devices': {}
         }
         
-        if not self.simulation_mode and self.db:
-            try:
-                data = self.db.child("power_management").child("rooms").child(f"room{room_id}").get().val()
-                if data:
-                    result['name'] = data.get('name', '')
-                    result['total_power'] = float(data.get('total_power', 0))
-                    if 'devices' in data:
-                        for dev_key, dev_data in data['devices'].items():
-                            result['devices'][dev_key] = {
-                                'name': dev_data.get('name', ''),
-                                'state': bool(dev_data.get('state', False)),
-                                'power': float(dev_data.get('power', 0)),
-                                'max_power': float(dev_data.get('max_power', 0))
-                            }
-                    return result
-            except Exception as e:
-                print(f"[ERROR] Get room data: {e}")
-        
-        # Fallback to local cache
+        # Use local cache
         if room_id in self.device_states:
             for dev_id, dev_data in self.device_states[room_id].items():
                 result['devices'][f'device{dev_id}'] = dev_data
+                if dev_data['state']:
+                    result['total_power'] += dev_data['power']
         return result
     
     def disconnect(self):
@@ -372,47 +329,49 @@ class FirebaseHandler:
     # ===== Power Data Methods =====
     
     def update_power_data(self, room_powers: dict, total_power: float):
-        """Update room power data to Firebase"""
+        """Update room power data to Firebase (async)"""
         if self.simulation_mode:
             return True
         
-        try:
-            # Update each room
-            for room_key, room_data in room_powers.items():
-                self.db.child("power_management").child("rooms").child(room_key).update({
-                    'name': room_data.get('name', ''),
-                    'power': round(room_data.get('power', 0), 2)
-                })
+        def update_firebase():
+            try:
+                for room_key, room_data in room_powers.items():
+                    self.db.child("power_management").child("rooms").child(room_key).update({
+                        'name': room_data.get('name', ''),
+                        'power': round(room_data.get('power', 0), 2)
+                    })
+                    
+                    if 'devices' in room_data:
+                        for device_key, device_data in room_data['devices'].items():
+                            self.db.child("power_management").child("rooms").child(room_key).child("devices").child(device_key).update(device_data)
                 
-                # Update devices
-                if 'devices' in room_data:
-                    for device_key, device_data in room_data['devices'].items():
-                        self.db.child("power_management").child("rooms").child(room_key).child("devices").child(device_key).update(device_data)
-            
-            # Update total
-            self.db.child("power_management").child("total").update({
-                'power': round(total_power, 2)
-            })
-            
-            return True
-        except Exception as e:
-            print(f"[ERROR] Firebase update power: {e}")
-            return False
+                self.db.child("power_management").child("total").update({
+                    'power': round(total_power, 2)
+                })
+            except Exception as e:
+                print(f"[ERROR] Firebase update power: {e}")
+        
+        thread = threading.Thread(target=update_firebase, daemon=True)
+        thread.start()
+        return True
     
     def update_energy_usage(self, energy_kwh: float, monthly_cost: float):
-        """Update energy usage and cost to Firebase"""
+        """Update energy usage and cost to Firebase (async)"""
         if self.simulation_mode:
             return True
         
-        try:
-            self.db.child("power_management").child("total").update({
-                'energy': round(energy_kwh, 2),
-                'monthly_cost': round(monthly_cost, 0)
-            })
-            return True
-        except Exception as e:
-            print(f"[ERROR] Firebase update energy: {e}")
-            return False
+        def update_firebase():
+            try:
+                self.db.child("power_management").child("total").update({
+                    'energy': round(energy_kwh, 2),
+                    'monthly_cost': round(monthly_cost, 0)
+                })
+            except Exception as e:
+                print(f"[ERROR] Firebase update energy: {e}")
+        
+        thread = threading.Thread(target=update_firebase, daemon=True)
+        thread.start()
+        return True
     
     # ===== Threshold Settings =====
     
@@ -434,19 +393,22 @@ class FirebaseHandler:
         return POWER_THRESHOLDS.copy()
     
     def set_thresholds(self, warning: int, critical: int):
-        """Save threshold settings to Firebase"""
+        """Save threshold settings to Firebase (async)"""
         if self.simulation_mode:
             return True
         
-        try:
-            self.db.child("power_management").child("settings").child("thresholds").update({
-                'warning': warning,
-                'critical': critical
-            })
-            return True
-        except Exception as e:
-            print(f"[ERROR] Firebase set thresholds: {e}")
-            return False
+        def update_firebase():
+            try:
+                self.db.child("power_management").child("settings").child("thresholds").update({
+                    'warning': warning,
+                    'critical': critical
+                })
+            except Exception as e:
+                print(f"[ERROR] Firebase set thresholds: {e}")
+        
+        thread = threading.Thread(target=update_firebase, daemon=True)
+        thread.start()
+        return True
     
     # ===== Tier Prices =====
     
@@ -467,19 +429,22 @@ class FirebaseHandler:
         return None, None
     
     def set_tier_prices(self, prices: list, vat: int):
-        """Save tier prices and VAT to Firebase"""
+        """Save tier prices and VAT to Firebase (async)"""
         if self.simulation_mode:
             return True
         
-        try:
-            self.db.child("power_management").child("settings").update({
-                'tier_prices': prices,
-                'vat': vat
-            })
-            return True
-        except Exception as e:
-            print(f"[ERROR] Firebase set tier prices: {e}")
-            return False
+        def update_firebase():
+            try:
+                self.db.child("power_management").child("settings").update({
+                    'tier_prices': prices,
+                    'vat': vat
+                })
+            except Exception as e:
+                print(f"[ERROR] Firebase set tier prices: {e}")
+        
+        thread = threading.Thread(target=update_firebase, daemon=True)
+        thread.start()
+        return True
     
     def stop_auto_sync(self):
         """Stop auto-sync/stream"""

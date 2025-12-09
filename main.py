@@ -1,6 +1,7 @@
 import sys
 import os
 import subprocess
+import threading
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidgetItem, 
                                QHeaderView, QMessageBox, QWidget)
 from PyQt5.QtCore import Qt, QTimer, QDateTime, QRect
@@ -558,29 +559,20 @@ class MainWindow(QMainWindow):
         
         # Scale UI after show
         QTimer.singleShot(100, self.scale_ui)
-        
-        # Sync device states from Firebase at startup
-        self.sync_devices_from_firebase()
     
     def sync_devices_from_firebase(self):
-        """Sync device states from Firebase at startup"""
-        try:
-            # Read all device states from Firebase
-            fb_states = self.firebase.sync_device_states_from_firebase()
-            
-            if fb_states:
-                print("[STARTUP] Loaded device states from Firebase:")
-                for room_key, devices in fb_states.items():
-                    room_id = int(room_key.replace('room', ''))
-                    if isinstance(devices, dict):
-                        for device_key, state in devices.items():
-                            device_id = int(device_key.replace('device', ''))
-                            print(f"  Room {room_id}, Device {device_id}: {'ON' if state else 'OFF'}")
-                print("[STARTUP] Device sync complete")
-                # Update UI for current room
-                self.update_room_display()
-        except Exception as e:
-            print(f"[ERROR] Sync from Firebase failed: {e}")
+        """Sync device states from Firebase at startup (async)"""
+        def do_sync():
+            try:
+                fb_states = self.firebase.sync_device_states_from_firebase()
+                if fb_states:
+                    print("[STARTUP] Loaded device states from Firebase")
+            except Exception as e:
+                print(f"[ERROR] Sync from Firebase failed: {e}")
+        
+        # Run in background thread
+        thread = threading.Thread(target=do_sync, daemon=True)
+        thread.start()
     
     def scale_ui(self):
         """Scale UI elements to fit screen"""
