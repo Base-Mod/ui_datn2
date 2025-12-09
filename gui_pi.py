@@ -514,9 +514,9 @@ class Ui_MainWindow(object):
         self.warningLabel.setText("")
         self.warningLabel.setObjectName("warningLabel")
         
-        # Power Chart Area (left - full height)
+        # Power Chart Area (left - adjusted height)
         self.chartWidget = QtWidgets.QWidget(self.REPORT)
-        self.chartWidget.setGeometry(QtCore.QRect(5, 22, 200, 245))
+        self.chartWidget.setGeometry(QtCore.QRect(5, 22, 200, 220))
         self.chartWidget.setObjectName("chartWidget")
         self.chartWidget.setStyleSheet("background-color: #0d1b2a; border-radius: 6px; border: 1px solid #415a77;")
         
@@ -528,8 +528,8 @@ class Ui_MainWindow(object):
         
         # Total Power Label (below chart)
         self.totalPowerLabel = QtWidgets.QLabel(self.REPORT)
-        self.totalPowerLabel.setGeometry(QtCore.QRect(5, 250, 200, 20))
-        self.totalPowerLabel.setStyleSheet("color: #00d4ff; font-size: 10px; font-weight: bold; background: transparent;")
+        self.totalPowerLabel.setGeometry(QtCore.QRect(5, 245, 200, 22))
+        self.totalPowerLabel.setStyleSheet("color: #00d4ff; font-size: 10px; font-weight: bold; background-color: #0d1b2a; border-radius: 4px; border: 1px solid #415a77;")
         self.totalPowerLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.totalPowerLabel.setText("Tổng: 0 W")
         

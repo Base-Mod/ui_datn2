@@ -9,6 +9,7 @@ from gui_pi import Ui_MainWindow
 from config import ROOMS, POWER_THRESHOLDS
 from modbus_handler import ModbusHandler
 from electricity_calc import ElectricityCalculator, UsageTracker
+from firebase_handler import FirebaseHandler, get_firebase
 import math
 
 
@@ -492,9 +493,20 @@ class MainWindow(QMainWindow):
         self.modbus = ModbusHandler()
         self.modbus.connect()
         
+        # Initialize Firebase handler
+        self.firebase = get_firebase()
+        self.firebase_sync_enabled = self.firebase.is_connected()
+        
         # Initialize electricity calculator
         self.calculator = ElectricityCalculator()
         self.tracker = UsageTracker()
+        
+        # Load thresholds from Firebase if available
+        if self.firebase_sync_enabled:
+            fb_thresholds = self.firebase.get_thresholds()
+            self.power_thresholds = fb_thresholds
+        else:
+            self.power_thresholds = POWER_THRESHOLDS.copy()
         
         # Room navigation
         self.rooms = ROOMS
@@ -603,6 +615,9 @@ class MainWindow(QMainWindow):
         if success:
             state = self.modbus.get_device_state(room_id, device['id'])
             self.update_device1_ui(state)
+            # Sync to Firebase
+            if self.firebase_sync_enabled:
+                self.firebase.set_device_state(room_id, device['id'], state)
     
     def toggle_device2(self):
         room_id = self.current_room['id']
@@ -612,6 +627,9 @@ class MainWindow(QMainWindow):
         if success:
             state = self.modbus.get_device_state(room_id, device['id'])
             self.update_device2_ui(state)
+            # Sync to Firebase
+            if self.firebase_sync_enabled:
+                self.firebase.set_device_state(room_id, device['id'], state)
     
     def prev_room(self):
         self.current_room_index = (self.current_room_index - 1) % len(self.rooms)
@@ -741,6 +759,10 @@ class MainWindow(QMainWindow):
         for i, spin in enumerate(self.ui.roomThresholdInputs):
             self.room_thresholds[i] = spin.value()
         
+        # Sync to Firebase
+        if self.firebase_sync_enabled:
+            self.firebase.set_thresholds(self.warning_threshold, self.critical_threshold)
+        
         # Visual feedback
         self.ui.saveThresholdBtn.setText("✓ Đã lưu")
         QTimer.singleShot(1500, lambda: self.ui.saveThresholdBtn.setText("Lưu ngưỡng"))
@@ -852,6 +874,43 @@ class MainWindow(QMainWindow):
         self.update_report_table()
         self.update_power_chart()
         self.update_pie_chart()
+        
+        # Sync to Firebase every 5 seconds
+        self.sync_to_firebase(total_power, monthly_cost * 1000)
+    
+    def sync_to_firebase(self, total_power, monthly_cost):
+        """Sync power data to Firebase"""
+        if not self.firebase_sync_enabled:
+            return
+        
+        try:
+            # Prepare room power data
+            room_powers = {}
+            for room in self.rooms:
+                room_power = self.modbus.get_room_power(room['id'])
+                room_powers[f"room{room['id']}"] = {
+                    'name': room['name'],
+                    'power': room_power,
+                    'devices': {}
+                }
+                # Add device states
+                for device in room['devices']:
+                    state = self.modbus.get_device_state(room['id'], device['id'])
+                    room_powers[f"room{room['id']}"]['devices'][f"device{device['id']}"] = {
+                        'name': device['name'],
+                        'state': state,
+                        'power': device['power'] if state else 0
+                    }
+            
+            # Update power data
+            self.firebase.update_power_data(room_powers, total_power)
+            
+            # Update energy usage
+            energy_kwh = self.tracker.get_total_energy() if hasattr(self.tracker, 'get_total_energy') else 0
+            self.firebase.update_energy_usage(energy_kwh, monthly_cost)
+            
+        except Exception as e:
+            print(f"[Firebase] Sync error: {e}")
     
     def check_power_threshold(self, total_power, room_warnings=None):
         """Check power against thresholds and show warnings"""
@@ -888,6 +947,9 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         """Clean up on close"""
         self.modbus.disconnect()
+        # Stop Firebase auto-sync if running
+        if self.firebase_sync_enabled:
+            self.firebase.stop_auto_sync()
         # Restore taskbar on Pi
         show_taskbar()
         # Restore mouse cursor
