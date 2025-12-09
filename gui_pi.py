@@ -300,35 +300,40 @@ class Ui_MainWindow(object):
         # Navigation buttons (left & right of room card)
         navButtonStyle = """
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #1b4965, stop:1 #0d1b2a);
+                background-color: #1b4965;
                 color: #00d4ff;
                 border: 1px solid #00d4ff;
                 border-radius: 6px;
                 font-weight: bold;
-                font-size: 10px;
+                font-size: 11px;
+                outline: none;
             }
             QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #00d4ff, stop:1 #1b4965);
-                color: #ffffff;
-            }
-            QPushButton:pressed {
                 background-color: #00d4ff;
                 color: #0d1b2a;
+            }
+            QPushButton:pressed {
+                background-color: #0099cc;
+                color: #ffffff;
+            }
+            QPushButton:focus {
+                outline: none;
+                border: 1px solid #00d4ff;
             }
         """
         
         self.pushButton_7 = QtWidgets.QPushButton(self.CONTROL)
-        self.pushButton_7.setGeometry(QtCore.QRect(70, 40, 45, 28))
+        self.pushButton_7.setGeometry(QtCore.QRect(65, 40, 50, 28))
         self.pushButton_7.setStyleSheet(navButtonStyle)
         self.pushButton_7.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pushButton_7.setFocusPolicy(QtCore.Qt.NoFocus)
         self.pushButton_7.setObjectName("pushButton_7")
         
         self.pushButton_8 = QtWidgets.QPushButton(self.CONTROL)
-        self.pushButton_8.setGeometry(QtCore.QRect(290, 40, 45, 28))
+        self.pushButton_8.setGeometry(QtCore.QRect(290, 40, 50, 28))
         self.pushButton_8.setStyleSheet(navButtonStyle)
         self.pushButton_8.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pushButton_8.setFocusPolicy(QtCore.Qt.NoFocus)
         self.pushButton_8.setObjectName("pushButton_8")
         
         # Device 1 Card
@@ -343,15 +348,10 @@ class Ui_MainWindow(object):
             }
         """)
         
-        self.device1Icon = QtWidgets.QLabel(self.device1Card)
-        self.device1Icon.setGeometry(QtCore.QRect(15, 15, 30, 30))
-        self.device1Icon.setText("💡")
-        self.device1Icon.setStyleSheet("font-size: 20px; background: transparent; border: none;")
-        
         self.label_8 = QtWidgets.QLabel(self.device1Card)
-        self.label_8.setGeometry(QtCore.QRect(50, 15, 120, 30))
+        self.label_8.setGeometry(QtCore.QRect(15, 15, 150, 30))
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(11)
         font.setBold(True)
         self.label_8.setFont(font)
         self.label_8.setStyleSheet("color: #e0e1dd; background: transparent; border: none;")
@@ -360,31 +360,38 @@ class Ui_MainWindow(object):
         # Toggle button style for devices
         toggleOnStyle = """
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #2ecc71, stop:1 #27ae60);
+                background-color: #2ecc71;
                 color: #ffffff;
                 border: none;
                 border-radius: 15px;
                 font-weight: bold;
                 font-size: 11px;
+                outline: none;
             }
             QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #27ae60, stop:1 #2ecc71);
+                background-color: #27ae60;
+            }
+            QPushButton:pressed {
+                background-color: #1e8449;
+            }
+            QPushButton:focus {
+                outline: none;
+                border: none;
             }
         """
         
         self.pushButton_5 = QtWidgets.QPushButton(self.device1Card)
-        self.pushButton_5.setGeometry(QtCore.QRect(50, 50, 80, 30))
+        self.pushButton_5.setGeometry(QtCore.QRect(15, 52, 90, 30))
         self.pushButton_5.setStyleSheet(toggleOnStyle)
         self.pushButton_5.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pushButton_5.setFocusPolicy(QtCore.Qt.NoFocus)
         self.pushButton_5.setObjectName("pushButton_5")
         
         # Device 1 status indicator
         self.device1Status = QtWidgets.QLabel(self.device1Card)
-        self.device1Status.setGeometry(QtCore.QRect(140, 55, 30, 20))
-        self.device1Status.setText("●")
-        self.device1Status.setStyleSheet("color: #2ecc71; font-size: 14px; background: transparent; border: none;")
+        self.device1Status.setGeometry(QtCore.QRect(115, 55, 50, 24))
+        self.device1Status.setText("ON")
+        self.device1Status.setStyleSheet("color: #2ecc71; font-size: 12px; font-weight: bold; background: transparent; border: none;")
         self.device1Status.setAlignment(QtCore.Qt.AlignCenter)
         
         # Device 2 Card
@@ -399,31 +406,27 @@ class Ui_MainWindow(object):
             }
         """)
         
-        self.device2Icon = QtWidgets.QLabel(self.device2Card)
-        self.device2Icon.setGeometry(QtCore.QRect(15, 15, 30, 30))
-        self.device2Icon.setText("🔌")
-        self.device2Icon.setStyleSheet("font-size: 20px; background: transparent; border: none;")
-        
         self.label_9 = QtWidgets.QLabel(self.device2Card)
-        self.label_9.setGeometry(QtCore.QRect(50, 15, 120, 30))
+        self.label_9.setGeometry(QtCore.QRect(15, 15, 150, 30))
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(11)
         font.setBold(True)
         self.label_9.setFont(font)
         self.label_9.setStyleSheet("color: #e0e1dd; background: transparent; border: none;")
         self.label_9.setObjectName("label_9")
         
         self.pushButton_6 = QtWidgets.QPushButton(self.device2Card)
-        self.pushButton_6.setGeometry(QtCore.QRect(50, 50, 80, 30))
+        self.pushButton_6.setGeometry(QtCore.QRect(15, 52, 90, 30))
         self.pushButton_6.setStyleSheet(toggleOnStyle)
         self.pushButton_6.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.pushButton_6.setFocusPolicy(QtCore.Qt.NoFocus)
         self.pushButton_6.setObjectName("pushButton_6")
         
         # Device 2 status indicator
         self.device2Status = QtWidgets.QLabel(self.device2Card)
-        self.device2Status.setGeometry(QtCore.QRect(140, 55, 30, 20))
-        self.device2Status.setText("●")
-        self.device2Status.setStyleSheet("color: #2ecc71; font-size: 14px; background: transparent; border: none;")
+        self.device2Status.setGeometry(QtCore.QRect(115, 55, 50, 24))
+        self.device2Status.setText("ON")
+        self.device2Status.setStyleSheet("color: #2ecc71; font-size: 12px; font-weight: bold; background: transparent; border: none;")
         self.device2Status.setAlignment(QtCore.Qt.AlignCenter)
         
         # Power info section
@@ -440,9 +443,9 @@ class Ui_MainWindow(object):
         
         self.powerLabel = QtWidgets.QLabel(self.powerInfoCard)
         self.powerLabel.setGeometry(QtCore.QRect(10, 10, 170, 25))
-        self.powerLabel.setText("⚡ Công suất phòng:")
+        self.powerLabel.setText("Công suất phòng:")
         font = QtGui.QFont()
-        font.setPointSize(9)
+        font.setPointSize(10)
         font.setBold(True)
         self.powerLabel.setFont(font)
         self.powerLabel.setStyleSheet("color: #778da9; background: transparent; border: none;")
@@ -459,9 +462,9 @@ class Ui_MainWindow(object):
         
         self.energyLabel = QtWidgets.QLabel(self.powerInfoCard)
         self.energyLabel.setGeometry(QtCore.QRect(10, 45, 170, 22))
-        self.energyLabel.setText("📊 Điện năng tiêu thụ:")
+        self.energyLabel.setText("Điện năng tiêu thụ:")
         font = QtGui.QFont()
-        font.setPointSize(9)
+        font.setPointSize(10)
         font.setBold(True)
         self.energyLabel.setFont(font)
         self.energyLabel.setStyleSheet("color: #778da9; background: transparent; border: none;")
@@ -630,6 +633,7 @@ class Ui_MainWindow(object):
                 border-radius: 6px;
                 font-size: 10px;
                 font-weight: bold;
+                outline: none;
             }
             QPushButton:hover {
                 background-color: #27ae60;
@@ -637,8 +641,12 @@ class Ui_MainWindow(object):
             QPushButton:pressed {
                 background-color: #1e8449;
             }
+            QPushButton:focus {
+                outline: none;
+            }
         """)
         self.saveTierBtn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.saveTierBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.saveTierBtn.setObjectName("saveTierBtn")
         
         # ===== RIGHT SIDE: Threshold Settings =====
@@ -782,6 +790,7 @@ class Ui_MainWindow(object):
                 border-radius: 6px;
                 font-size: 10px;
                 font-weight: bold;
+                outline: none;
             }
             QPushButton:hover {
                 background-color: #d68910;
@@ -789,8 +798,12 @@ class Ui_MainWindow(object):
             QPushButton:pressed {
                 background-color: #b9770e;
             }
+            QPushButton:focus {
+                outline: none;
+            }
         """)
         self.saveThresholdBtn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.saveThresholdBtn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.saveThresholdBtn.setObjectName("saveThresholdBtn")
         
         # Decorative divider line
