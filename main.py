@@ -46,22 +46,30 @@ class PowerChart(QWidget):
                 break
     
     def paintEvent(self, event):
-        if not self.data:
-            return
-        
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         
+        w = self.width()
+        h = self.height()
+        
+        # Draw title inside
+        painter.setPen(QPen(QColor("#778da9")))
+        painter.setFont(QFont("Arial", 7))
+        painter.drawText(0, 2, w, 14, Qt.AlignCenter, "CÔNG SUẤT (W)")
+        
+        if not self.data:
+            return
+        
         # Chart area
-        margin_top = 20
-        margin_bottom = 25
+        margin_top = 18
+        margin_bottom = 22
         margin_left = 5
         margin_right = 5
         
-        w = self.width() - margin_left - margin_right
-        h = self.height() - margin_top - margin_bottom
+        chart_w = w - margin_left - margin_right
+        chart_h = h - margin_top - margin_bottom
         
-        if len(self.data) == 0 or h <= 0:
+        if len(self.data) == 0 or chart_h <= 0:
             return
         
         # Find max value
@@ -69,19 +77,19 @@ class PowerChart(QWidget):
         if max_val == 0:
             max_val = 1
         
-        bar_width = w // len(self.data) - 8
-        bar_spacing = (w - bar_width * len(self.data)) // (len(self.data) + 1)
+        bar_width = chart_w // len(self.data) - 6
+        bar_spacing = (chart_w - bar_width * len(self.data)) // (len(self.data) + 1)
         
         self.bar_rects = []
         
         for i, (name, power) in enumerate(self.data):
             # Calculate bar height
-            bar_height = int((power / max_val) * h * 0.85)
-            if bar_height < 2:
-                bar_height = 2
+            bar_height = int((power / max_val) * chart_h * 0.85)
+            if bar_height < 3:
+                bar_height = 3
             
             x = margin_left + bar_spacing + i * (bar_width + bar_spacing)
-            y = margin_top + h - bar_height
+            y = margin_top + chart_h - bar_height
             
             # Store rect for click detection
             self.bar_rects.append(QRect(x, y, bar_width, bar_height))
@@ -119,7 +127,7 @@ class PowerChart(QWidget):
             # Draw room label below
             painter.setPen(QPen(QColor("#778da9")))
             painter.setFont(QFont("Arial", 7))
-            painter.drawText(x - 5, margin_top + h + 3, bar_width + 10, 15, 
+            painter.drawText(x - 5, margin_top + chart_h + 2, bar_width + 10, 15, 
                            Qt.AlignCenter, name.replace("Phòng ", "P"))
 
 
@@ -153,13 +161,14 @@ class PieChart(QWidget):
         
         # Draw room name
         painter.setPen(QPen(QColor("#00d4ff")))
-        painter.setFont(QFont("Arial", 9, QFont.Bold))
-        painter.drawText(0, 2, w, 16, Qt.AlignCenter, self.room_name)
+        painter.setFont(QFont("Arial", 8, QFont.Bold))
+        title = self.room_name if self.room_name else "Chi tiết phòng"
+        painter.drawText(0, 2, w, 14, Qt.AlignCenter, title)
         
         if not self.data:
             painter.setPen(QPen(QColor("#778da9")))
             painter.setFont(QFont("Arial", 8))
-            painter.drawText(0, 20, w, h-20, Qt.AlignCenter, "Nhấp phòng")
+            painter.drawText(0, 18, w, h-18, Qt.AlignCenter, "Nhấp phòng\ntrên biểu đồ")
             return
         
         # Calculate total
@@ -167,15 +176,15 @@ class PieChart(QWidget):
         if total == 0:
             painter.setPen(QPen(QColor("#778da9")))
             painter.setFont(QFont("Arial", 8))
-            painter.drawText(0, 20, w, 40, Qt.AlignCenter, "Tất cả OFF")
+            painter.drawText(0, 18, w, 35, Qt.AlignCenter, "Tất cả OFF")
             # Still draw legend
-            self.draw_legend(painter, w, 65)
+            self.draw_legend(painter, w, 55)
             return
         
         # Pie chart dimensions
-        pie_size = 55
+        pie_size = 60
         pie_x = (w - pie_size) // 2
-        pie_y = 20
+        pie_y = 18
         
         # Draw pie slices
         start_angle = 90 * 16  # Start from top
@@ -193,15 +202,15 @@ class PieChart(QWidget):
             start_angle += span_angle
         
         # Draw legend
-        self.draw_legend(painter, w, pie_y + pie_size + 8)
+        self.draw_legend(painter, w, pie_y + pie_size + 5)
     
     def draw_legend(self, painter, w, start_y):
         """Draw device legend"""
-        legend_x = 5
+        legend_x = 8
         painter.setFont(QFont("Arial", 7))
         
         for i, (name, power, is_on) in enumerate(self.data):
-            y = start_y + i * 13
+            y = start_y + i * 12
             color = self.colors[i % len(self.colors)] if is_on else QColor("#555")
             
             # Color box
@@ -212,8 +221,8 @@ class PieChart(QWidget):
             # Text
             painter.setPen(QPen(QColor("#e0e1dd") if is_on else QColor("#666")))
             status = f"{power}W" if is_on else "OFF"
-            painter.drawText(legend_x + 12, y - 2, w - 20, 12, 
-                           Qt.AlignLeft | Qt.AlignVCenter, f"{name}: {status}")
+            painter.drawText(legend_x + 11, y - 1, w - 20, 11, 
+                           Qt.AlignLeft | Qt.AlignVCenter, f"{name}:{status}")
 
 
 def hide_taskbar():
@@ -686,11 +695,12 @@ class MainWindow(QMainWindow):
         self.ui.REPORTTB.setHorizontalHeaderLabels(["TB", "W"])
         
         # Set column widths
-        self.ui.REPORTTB.setColumnWidth(0, 55)
-        self.ui.REPORTTB.setColumnWidth(1, 35)
+        self.ui.REPORTTB.setColumnWidth(0, 50)
+        self.ui.REPORTTB.setColumnWidth(1, 30)
         
-        # Hide row numbers
+        # Hide row numbers, compact rows
         self.ui.REPORTTB.verticalHeader().setVisible(False)
+        self.ui.REPORTTB.verticalHeader().setDefaultSectionSize(18)
         self.ui.REPORTTB.horizontalHeader().setStretchLastSection(True)
         
         self.update_report_table()
