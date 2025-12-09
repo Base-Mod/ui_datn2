@@ -26,13 +26,19 @@ class ElectricityCalculator:
             prices: List of 6 prices for each tier
             vat: VAT rate (0.08 = 8%)
         """
-        if len(prices) == 6:
+        if prices and len(prices) == 6:
             for i, price in enumerate(prices):
                 if i < len(self.tiers):
-                    self.tiers[i]['price'] = price
+                    # Ensure price is a number, not a list
+                    if isinstance(price, (list, tuple)):
+                        price = price[0] if len(price) > 0 else 0
+                    self.tiers[i]['price'] = int(price)
         
         if vat is not None:
-            self.vat_rate = vat
+            # Ensure vat is a number
+            if isinstance(vat, (list, tuple)):
+                vat = vat[0] if len(vat) > 0 else 0.08
+            self.vat_rate = float(vat)
     
     def calculate_bill(self, kwh: float) -> dict:
         """
@@ -55,6 +61,11 @@ class ElectricityCalculator:
             tier_start = tier['from']
             tier_end = tier['to']
             tier_price = tier['price']
+            
+            # Ensure tier_price is a number
+            if isinstance(tier_price, (list, tuple)):
+                tier_price = tier_price[0] if len(tier_price) > 0 else 0
+            tier_price = float(tier_price)
             
             # Calculate kWh in this tier
             if tier_end == float('inf'):
