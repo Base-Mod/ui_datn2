@@ -950,7 +950,7 @@ class MainWindow(QMainWindow):
         
         # Get VAT from calculator
         vat_percent = self.calculator.vat_rate * 100
-        self.ui.vatInput.setValue(vat_percent)
+        self.ui.vatInput.setValue(int(vat_percent))
         
         print(f"[SETUP] Loaded tier prices to UI: {[int(t['price']) for t in self.calculator.tiers]}")
     
