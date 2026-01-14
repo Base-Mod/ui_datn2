@@ -1,0 +1,8 @@
+
+
+--- Crash at Wed Jan 14 15:24:32 2026 ---
+Traceback (most recent call last):
+  File "C:\Users\Hao Nguyen\Downloads\GUI_PI4\main.py", line 610, in update_status
+    def update_status(self):
+    
+KeyboardInterrupt

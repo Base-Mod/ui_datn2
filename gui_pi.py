@@ -143,7 +143,7 @@ class Ui_MainWindow(object):
         font.setBold(True)
         self.label.setFont(font)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.label.setStyleSheet("color: #ffffff; font-weight: bold; text-shadow: 0 0 10px #00d4ff;")
+        self.label.setStyleSheet("color: #00d4ff; font-weight: bold;")
         self.label.setObjectName("label")
         
         # Top decorative line
