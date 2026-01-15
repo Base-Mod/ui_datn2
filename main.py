@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QTableWidgetItem, QWidge
                              QSpinBox, QLineEdit)
 from PyQt5.QtCore import Qt, QTimer, QDateTime, QRect
 from PyQt5.QtGui import QColor, QFont, QCursor
+from datetime import datetime, timedelta, timezone
 from gui_pi import Ui_MainWindow
 from db_manager import DatabaseManager
 from line_chart import PowerLineChart
@@ -239,6 +240,13 @@ class MainWindow(QMainWindow):
             self.timer.start(2000)  # Update every 2 seconds
             print("[DEBUG] Timer started")
             
+            # Timer for real-time power/energy updates (every 1 second)
+            print("[DEBUG] Starting power update timer...")
+            self.power_timer = QTimer()
+            self.power_timer.timeout.connect(self.update_power_realtime)
+            self.power_timer.start(1000)  # Update every 1 second
+            print("[DEBUG] Power update timer started")
+            
             # Startup
             print("[DEBUG] Setting startup page...")
             self.ui.stackedWidget.setCurrentWidget(self.ui.HOME)
@@ -400,12 +408,8 @@ class MainWindow(QMainWindow):
         self.ui.label_9.setText("Device 1")
         self.update_device_ui(1, device['device1'])
         
-        # Update power and energy display if available
-        sensor_data = self.db.get_latest_sensor_data(device['slave_id']) if self.db_connected else {}
-        power = sensor_data.get('power', 0)
-        energy = sensor_data.get('energy', 0)
-        self.ui.roomPowerValue.setText(f"{power} W")
-        self.ui.roomEnergyValue.setText(f"{energy / 100:.2f} kWh")
+        # Trigger immediate power/energy update (will be updated by real-time timer)
+        self.update_power_realtime()
     
     def prev_slave(self):
         if not self.pending_devices:
@@ -521,14 +525,8 @@ class MainWindow(QMainWindow):
         # Update table with latest data
         self.update_report_table(power_data)
         
-        # Update total power
-        if power_data:
-            total_power = sum(d['value'] for d in power_data)
-            avg_power = total_power // len(power_data)
-            max_power = max(d['value'] for d in power_data)
-            self.ui.totalPowerLabel.setText(f"TB: {avg_power}W | Max: {max_power}W")
-        else:
-            self.ui.totalPowerLabel.setText("Không có dữ liệu")
+        # Trigger real-time power update which will handle power display and warnings
+        self.update_power_realtime()
     
     def update_report_table(self, power_data):
         """Update REPORTTB with power consumption summary"""
@@ -545,9 +543,15 @@ class MainWindow(QMainWindow):
             ts = data_point['ts']
             value = data_point['value']
             
-            # Format timestamp
+            # Format timestamp - chuyển sang giờ local
             if hasattr(ts, 'strftime'):
-                time_str = ts.strftime("%H:%M:%S")
+                # Nếu ts là UTC, chuyển sang local time
+                if ts.tzinfo is None:
+                    # Giả sử ts từ DB là UTC, cộng thêm 7 giờ cho Vietnam
+                    local_ts = ts + timedelta(hours=7)
+                else:
+                    local_ts = ts.astimezone()
+                time_str = local_ts.strftime("%H:%M:%S")
             else:
                 time_str = str(ts)
             
@@ -711,6 +715,84 @@ class MainWindow(QMainWindow):
 
     # ==================== PERIODIC UPDATE ====================
 
+    def update_power_realtime(self):
+        """Real-time update for power and energy displays"""
+        if not self.db_connected:
+            return
+        
+        try:
+            current_page = self.ui.stackedWidget.currentWidget()
+            
+            # Update power for CONTROL page
+            if current_page == self.ui.CONTROL and self.pending_devices:
+                if self.current_slave_index >= len(self.pending_devices):
+                    return
+                
+                device = self.pending_devices[self.current_slave_index]
+                sensor_data = self.db.get_latest_sensor_data(device['slave_id'])
+                power = sensor_data.get('power', 0)
+                energy = sensor_data.get('energy', 0)
+                
+                # Update UI
+                self.ui.roomPowerValue.setText(f"{power} W")
+                self.ui.roomEnergyValue.setText(f"{energy / 100:.2f} kWh")
+            
+            # Update power for HOME page
+            elif current_page == self.ui.HOME:
+                total_power = 0
+                for device in self.pending_devices:
+                    sensor_data = self.db.get_latest_sensor_data(device['slave_id'])
+                    total_power += sensor_data.get('power', 0)
+                
+                if hasattr(self.ui, 'totalPowerLabel'):
+                    self.ui.totalPowerLabel.setText(f"Tổng: {total_power} W")
+                
+                # Update warning status based on current power
+                warning_threshold = self.settings.get('threshold_warning', 500)
+                critical_threshold = self.settings.get('threshold_critical', 1000)
+                
+                if hasattr(self.ui, 'warningLabel'):
+                    if total_power >= critical_threshold:
+                        self.ui.warningLabel.setText(f"⚠ NGUY HIỂM: {total_power}W")
+                        self.ui.warningLabel.setStyleSheet("color: #e74c3c; font-weight: bold;")
+                    elif total_power >= warning_threshold:
+                        self.ui.warningLabel.setText(f"⚠ CẢNH BÁO: {total_power}W")
+                        self.ui.warningLabel.setStyleSheet("color: #f39c12; font-weight: bold;")
+                    else:
+                        self.ui.warningLabel.setText("✓ Bình thường")
+                        self.ui.warningLabel.setStyleSheet("color: #2ecc71; font-weight: bold;")
+            
+            # Update power for REPORT page  
+            elif current_page == self.ui.REPORT and hasattr(self, 'line_chart'):
+                # Get latest power data
+                power_data = self.db.get_power_data(self.selected_report_slave_id, reg=40002, hours=24)
+                
+                if power_data:
+                    current_power = power_data[-1]['value']
+                    avg_power = sum(d['value'] for d in power_data) // len(power_data)
+                    max_power = max(d['value'] for d in power_data)
+                    self.ui.totalPowerLabel.setText(f"Hiện tại: {current_power}W | TB: {avg_power}W")
+                    
+                    # Update chart with latest data
+                    self.line_chart.set_data(power_data)
+                    
+                    # Update warning based on current power
+                    warning_threshold = self.settings.get('threshold_warning', 500)
+                    critical_threshold = self.settings.get('threshold_critical', 1000)
+                    
+                    if hasattr(self.ui, 'warningLabel'):
+                        if current_power >= critical_threshold:
+                            self.ui.warningLabel.setText(f"⚠ NGUY HIỂM: {current_power}W")
+                            self.ui.warningLabel.setStyleSheet("color: #e74c3c; font-weight: bold;")
+                        elif current_power >= warning_threshold:
+                            self.ui.warningLabel.setText(f"⚠ CẢNH BÁO: {current_power}W")
+                            self.ui.warningLabel.setStyleSheet("color: #f39c12; font-weight: bold;")
+                        else:
+                            self.ui.warningLabel.setText("✓ Bình thường")
+                            self.ui.warningLabel.setStyleSheet("color: #2ecc71; font-weight: bold;")
+        except Exception as e:
+            print(f"[ERROR] Real-time power update failed: {e}")
+
     def update_status(self):
         """Periodic status update"""
         now = QDateTime.currentDateTime().toString("hh:mm:ss dd/MM")
@@ -724,6 +806,7 @@ class MainWindow(QMainWindow):
         try:
             # Reload data from database
             self.pending_devices = self.db.get_pending_devices()
+            self.settings = self.db.get_settings()  # Reload settings để cập nhật ngưỡng
             
             # Update displays based on current page
             current_page = self.ui.stackedWidget.currentWidget()
@@ -734,6 +817,8 @@ class MainWindow(QMainWindow):
                 self.update_control_display()
             elif current_page == self.ui.REPORT:
                 self.update_report_page()
+            elif current_page == self.ui.SETUP:
+                self.update_setup_display()
             
             # Update status bar
             device_count = len(self.pending_devices)
@@ -744,6 +829,13 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         """Cleanup on close"""
+        # Stop timers
+        if hasattr(self, 'timer') and self.timer:
+            self.timer.stop()
+        if hasattr(self, 'power_timer') and self.power_timer:
+            self.power_timer.stop()
+        
+        # Disconnect database
         if self.db_connected and self.db:
             self.db.disconnect()
         show_taskbar()
